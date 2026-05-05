@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Pelaporan Pipeline</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="form-container">
+        <!-- HALAMAN 1: Data Awal -->
+        <section id="page1">
+            <h2>Data Monitoring & Akuisisi</h2>
+            <div class="input-group">
+                <label>Tanggal Pelaporan</label>
+                <input type="date" id="mon-date" required>
+            </div>
+            <div class="input-group">
+                <label>Kode Cabang</label>
+                <input type="text" id="branch-code" placeholder="Masukkan 5 digit kode">
+                <p id="error-msg" style="color: red; display: none; font-size: 14px; margin-top: 5px;">Kode Cabang tidak valid.</p>
+            </div>
+            <button onclick="validateStep1()">Next</button>
+        </section>
+
+        <!-- HALAMAN 1.5: Pilih Menu Utama -->
+        <section id="page-main-menu" style="display: none;">
+            <h2>Pilih Menu Utama</h2>
+            <button class="cat-btn" onclick="selectMainMenu('monitoring')">1. Monitoring</button>
+            <button class="cat-btn" onclick="selectMainMenu('akuisisi')">2. Akuisisi</button>
+            <button class="back-btn" onclick="goToPage('page1')">Kembali</button>
+        </section>
+
+        <!-- HALAMAN 2: Pilihan Kategori (Dinamis) -->
+        <section id="page2" style="display: none;">
+            <h2 id="menu-title">Pilih Kategori</h2>
+            <div id="category-options"></div>
+            <button class="back-btn" onclick="goToPage('page-main-menu')">Kembali</button>
+        </section>
+
+        <!-- HALAMAN 3: Sub Kategori & Detail Input -->
+        <section id="page3" style="display: none;">
+            <h2 id="sub-title">Sub Kategori</h2>
+            <div id="sub-options"></div>
+
+            <div id="dynamic-input-area" style="display: none; margin-top: 20px; border-top: 1px solid #ddd; padding-top: 20px;">
+                <label id="question-label" style="font-weight: bold; margin-bottom: 10px; display: block;"></label>
+                <input type="number" id="follow-up-count" placeholder="Jumlah data" oninput="generateTextInputs()" style="margin-bottom: 15px;">
+                
+                <div id="text-inputs-container"></div>
+                
+                <button id="submit-btn" onclick="submitFinalData()" style="margin-top: 15px; background-color: #28a745;">Submit Data</button>
+            </div>
+
+            <button class="back-btn" onclick="goBackToCategories()" style="margin-top: 10px;">Kembali ke Kategori</button>
+        </section>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
