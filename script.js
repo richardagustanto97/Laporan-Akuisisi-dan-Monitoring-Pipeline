@@ -7,7 +7,7 @@ const menuData = {
         title: "Menu Monitoring", 
         categories: { 
             "Payroll": ["Pipeline PMP", "Pipeline Badan Usaha", "Diluar Pipeline"], 
-            "Prioritas": ["Pipeline RTW atau NTB", "Diluar Pipeline", "Pipeline MDS/MDCI/RDPU"], 
+            "Prioritas": ["Pipeline RTW atau NTB", "Diluar Pipeline Prio", "Pipeline MDS/MDCI/RDPU"], 
             "Pebisnis": ["Pipeline Data Leakage", "Pipeline GMM", "Leads Kopra", "Pipeline nasabah dari Area", "Kawasan Pebisnis", "Non Pipeline dan Non Kawasan"], 
             "Individu": ["Pipeline Cakra", "Kawasan", "Non pipeline"] 
         } 
@@ -31,8 +31,9 @@ const configMap = {
     "Diluar Pipeline": { col1: "Nama PT", col2: "Jml Prospek", type2: "text" },
     
     // MONITORING - PRIORITAS
-    "Pipeline RTW atau NTB": { col1: "Nama", col2: "CIF", type2: "select", options: ["RTW", "NTB"] },
-    "Pipeline MDS/MDCI/RDPU": { col1: "Nama", col2: "CIF", type2: "select", options: ["MDS", "MDCI", "RDPU"] },
+    "Pipeline RTW atau NTB": { col1: "Nama Nasabah", col2: "CIF", type2: "select", options: ["RTW", "NTB"] },
+    "Pipeline MDS/MDCI/RDPU": { col1: "Nama Nasabah", col2: "CIF", type2: "select", options: ["MDS", "MDCI", "RDPU"] },
+    "Diluar Pipeline Prio": { col1: "Nama Nasabah", col2: "CIF", type2: "text" }
     
     // MONITORING - PEBISNIS
     "Pipeline Data Leakage": { col1: "Nama", col2: "CIF", col3: "Product Offering", type3: "select", options: ["LVM", "EDC"] },
