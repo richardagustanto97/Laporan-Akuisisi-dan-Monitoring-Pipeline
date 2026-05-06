@@ -27,53 +27,28 @@ const menuData = {
     }
 };
 
-// PEMETAAN PLACEHOLDER SESUAI SUB-KATEGORI
 const placeholderMap = {
-    // MONITORING
-    "Pipeline PMP": "Nama PT / Jml Prospek / Hasil FU (Berminat/tdk berminat/FU lagi)",
-    "Pipeline Badan Usaha": "Nama PT / Jml Prospek / Hasil FU (Berminat/tdk berminat/FU lagi)",
-    "Diluar Pipeline": "Nama PT / Jml Prospek / Hasil FU (Berminat/tdk berminat/FU lagi)",
-    "Pipeline RTW atau NTB": "Nama / Product offering /Hasil FU (Berminat/tdk berminat/FU lagi)",
-    "Pipeline Data Leakage": "Nama / Product offering (LVM/EDC) /Hasil FU (Berminat/tdk berminat/FU lagi)",
-    "Pipeline GMM": "Nama / Product offering (LVM/EDC) / Hasil FU (Berminat/tdk berminat/FU lagi)",
-    "Leads Kopra": "Nama PT / Hasil FU (Berminat/tdk berminat/FU lagi)",
-    "Pipeline nasabah dari Area": "Nama / Product offering (LVM/EDC/Kopra) / Hasil FU (Berminat/tdk berminat/FU lagi)",
-    "Kawasan": "Nama / Product offering (LVM/EDC/Kopra) / Hasil FU (Berminat/tdk berminat/FU lagi)",
-    "Non Pipeline dan Non Kawasan": "Nama / Product offering (LVM/EDC/Kopra) / Hasil FU (Berminat/tdk berminat/FU lagi)",
-    "Pipeline Cakra": "Nama / Product offering / Hasil FU (Berminat/tdk berminat/FU lagi)",
-    "Non pipeline": "Nama / Product offering / Hasil FU (Berminat/tdk berminat/FU lagi)",
-
-    // AKUISISI PAYROLL
+    "Pipeline PMP": "Nama PT / Jml Prospek",
+    "Pipeline Badan Usaha": "Nama PT / Jml Prospek",
+    "Diluar Pipeline": "Nama PT / Jml Prospek",
+    "Pipeline RTW atau NTB": "Nama / Product offering",
+    "Pipeline Data Leakage": "Nama / Product offering (LVM/EDC)",
+    "Pipeline GMM": "Nama / Product offering (LVM/EDC)",
+    "Leads Kopra": "Nama PT",
+    "Pipeline nasabah dari Area": "Nama / Product offering (LVM/EDC/Kopra)",
+    "Kawasan": "Nama / Product offering (LVM/EDC/Kopra)",
+    "Non Pipeline dan Non Kawasan": "Nama / Product offering (LVM/EDC/Kopra)",
+    "Pipeline Cakra": "Nama / Product offering",
+    "Non pipeline": "Nama / Product offering",
     "New Mitra Payroll": "Nomor Mitra / Nama Mitra",
     "New CIF Payroll": "Nomor Rekening",
-    "New Payroll": "Nomor Rekening",
-    "Eksisting Payroll": "Nomor Rekening",
     "AXA": "Jumlah Case / FBI",
-
-    // AKUISISI PRIORITAS & HASIL ALL
     "RTW": "Nomor CIF",
     "NTB": "Nomor CIF",
     "MDS": "Nominal",
-    "MDCI": "Nominal",
-    "RDPU": "Nominal",
-
-    // AKUISISI PEBISNIS
     "MTB": "Nomor Rekening",
-    "Giro": "Nomor Rekening",
     "EDC": "Nama Aplikasi (Nasabah)",
-    "LVM": "Nama Aplikasi (Nasabah)",
-    "Kopra": "Nama Perusahaan / Aplikasi",
-
-    // AKUISISI INDIVIDU & LAINNYA
-    "GMM": "Nomor Rekening",
-    "Livin": "Nomor Rekening",
-    "Simpel": "Nomor Rekening",
-    "Tab Reguler": "Nomor Rekening",
-    "Multicurrency": "Nomor Rekening",
-    "MTR": "Nomor Rekening",
-    "Tab Now non GMM": "Nomor Rekening",
-    "Tab Now": "Nomor Rekening",
-    "MTBI": "Nomor Rekening"
+    "Kopra": "Nama Perusahaan / Aplikasi"
 };
 
 let currentMenu = ""; 
@@ -137,46 +112,79 @@ function showSub(catName) {
 }
 
 // ==========================================
-// 3. LOGIKA INPUT & PENGIRIMAN
+// 3. LOGIKA INPUT DINAMIS & WARNA
 // ==========================================
+function updateColor(selectElement) {
+    selectElement.classList.remove('bg-berminat', 'bg-followup', 'bg-tidak');
+    if (selectElement.value === "Berminat") selectElement.classList.add('bg-berminat');
+    else if (selectElement.value === "Follow up") selectElement.classList.add('bg-followup');
+    else if (selectElement.value === "Tidak berminat") selectElement.classList.add('bg-tidak');
+}
+
 function generateTextInputs() {
     const count = document.getElementById('follow-up-count').value;
     const container = document.getElementById('text-inputs-container');
     const selectedSub = document.getElementById('dynamic-input-area').getAttribute('data-selected-sub');
     
     container.innerHTML = ""; 
-    
-    // Ambil placeholder sesuai pemetaan, jika tidak ada gunakan default
     const placeholderText = placeholderMap[selectedSub] || "Masukkan detail keterangan";
 
     if (count > 0) {
         for (let i = 1; i <= count; i++) {
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.placeholder = `${i}. ${placeholderText}`;
-            input.className = "dynamic-text-input";
-            input.style.marginBottom = "10px";
-            container.appendChild(input);
+            const row = document.createElement('div');
+            row.className = "input-row";
+            
+            if (currentMenu === 'monitoring') {
+                // TAMPILAN MONITORING: Menggunakan Picklist Berwarna
+                row.innerHTML = `
+                    <input type="text" placeholder="${i}. ${placeholderText}" class="dynamic-text-input">
+                    <select class="status-select" onchange="updateColor(this)">
+                        <option value="" disabled selected>Status</option>
+                        <option value="Berminat">Berminat</option>
+                        <option value="Follow up">Follow up</option>
+                        <option value="Tidak berminat">Tidak berminat</option>
+                    </select>
+                `;
+            } else {
+                // TAMPILAN AKUISISI: Hanya input teks biasa
+                row.innerHTML = `
+                    <input type="text" placeholder="${i}. ${placeholderText}" class="dynamic-text-input" style="flex: 1;">
+                `;
+            }
+            container.appendChild(row);
         }
     }
 }
 
+// ==========================================
+// 4. PENGIRIMAN DATA KE GOOGLE SHEETS
+// ==========================================
 async function submitFinalData() {
     const tanggal = document.getElementById('mon-date').value;
     const kodeCabang = document.getElementById('branch-code').value;
     const kategori = document.getElementById('dynamic-input-area').getAttribute('data-selected-cat');
     const subKategori = document.getElementById('dynamic-input-area').getAttribute('data-selected-sub');
-    const textInputs = document.querySelectorAll('.dynamic-text-input');
+    const rows = document.querySelectorAll('.input-row');
     
     let destinationSheet = (currentMenu === 'monitoring') ? "Data Detail Penginputan" : "Data Detail Akuisisi";
-
     const btn = document.getElementById('submit-btn');
     btn.innerText = "Mengirim...";
     btn.disabled = true;
 
     try {
-        for (let input of textInputs) {
-            if (input.value.trim() !== "") {
+        for (let row of rows) {
+            const ketInput = row.querySelector('.dynamic-text-input');
+            const statusSelect = row.querySelector('.status-select'); 
+            
+            const ketValue = ketInput ? ketInput.value.trim() : "";
+            const statusValue = statusSelect ? statusSelect.value : "";
+            
+            if (ketValue !== "") {
+                // Gabungkan status jika ada (Hanya untuk menu Monitoring)
+                const ketLengkap = (currentMenu === 'monitoring' && statusValue) 
+                                   ? `${ketValue} (${statusValue})` 
+                                   : ketValue;
+
                 const payload = {
                     targetSheet: destinationSheet,
                     tanggal: tanggal,
@@ -184,7 +192,7 @@ async function submitFinalData() {
                     kategori: kategori,
                     subKategori: subKategori,
                     jumlah: 1,
-                    keterangan: input.value.trim()
+                    keterangan: ketLengkap
                 };
 
                 await fetch(webAppUrl, {
@@ -194,14 +202,13 @@ async function submitFinalData() {
                 });
             }
         }
-        alert(`Data berhasil disimpan di: ${destinationSheet}`);
+        alert(`Data ${currentMenu} berhasil disimpan!`);
         location.reload();
     } catch (err) {
-        alert("Gagal: " + err);
+        alert("Gagal mengirim data: " + err);
         btn.innerText = "Submit Data";
         btn.disabled = false;
     }
 }
 
 function goBackToCategories() { goToPage('page2'); }
-function goBackToMainMenu() { goToPage('page-main-menu'); }
