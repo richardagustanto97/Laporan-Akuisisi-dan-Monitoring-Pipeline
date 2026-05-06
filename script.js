@@ -30,10 +30,10 @@ const configMap = {
     "Pipeline Badan Usaha": { col1: "Nama PT", col2: "Jml Prospek", type2: "text" },
     "Diluar Pipeline": { col1: "Nama PT", col2: "Jml Prospek", type2: "text" },
     
-    // MONITORING - PRIORITAS
+    // MONITORING - PRIORITAS (Updated)[cite: 3]
     "Pipeline RTW atau NTB": { col1: "Nama Nasabah", col2: "CIF", type2: "select", options: ["RTW", "NTB"] },
     "Pipeline MDS/MDCI/RDPU": { col1: "Nama Nasabah", col2: "CIF", type2: "select", options: ["MDS", "MDCI", "RDPU"] },
-    "Diluar Pipeline Prio": { col1: "Nama Nasabah", col2: "CIF", type2: "text" }
+    "Diluar Pipeline Prio": { col1: "Nama Nasabah", col2: "CIF", type2: "text" },
     
     // MONITORING - PEBISNIS
     "Pipeline Data Leakage": { col1: "Nama", col2: "CIF", col3: "Product Offering", type3: "select", options: ["LVM", "EDC"] },
@@ -65,7 +65,7 @@ let currentMenu = "";
 function goToPage(pageId) {
     document.querySelectorAll('section').forEach(s => s.style.display = 'none');
     const target = document.getElementById(pageId);
-    if (target) target.style.display = 'block';
+    if (target) target.style.display = 'block';[cite: 3]
 }
 
 function validateStep1() {
@@ -73,27 +73,27 @@ function validateStep1() {
     const dateInput = document.getElementById('mon-date').value;
     const errorMsg = document.getElementById('error-msg');
     
-    if (!dateInput) { alert("Silahkan isi tanggal pelaporan."); return; }
+    if (!dateInput) { alert("Silahkan isi tanggal pelaporan."); return; }[cite: 3]
     if (validCodes.includes(codeInput)) { 
         errorMsg.style.display = 'none';
         goToPage('page-main-menu'); 
     } else { 
         errorMsg.style.display = 'block'; 
-    }
+    }[cite: 3]
 }
 
 function selectMainMenu(menu) {
     currentMenu = menu;
     const container = document.getElementById('category-options');
     document.getElementById('menu-title').innerText = menuData[menu].title;
-    container.innerHTML = "";
+    container.innerHTML = "";[cite: 3]
     Object.keys(menuData[menu].categories).forEach(cat => {
         const btn = document.createElement('button'); 
         btn.className = 'cat-btn';
         btn.innerText = cat; 
         btn.onclick = () => showSub(cat);
         container.appendChild(btn);
-    });
+    });[cite: 3]
     goToPage('page2');
 }
 
@@ -102,7 +102,7 @@ function showSub(catName) {
     const dynamicArea = document.getElementById('dynamic-input-area');
     container.innerHTML = ""; 
     dynamicArea.style.display = 'none';
-    document.getElementById('sub-title').innerText = "Kategori: " + catName;
+    document.getElementById('sub-title').innerText = "Kategori: " + catName;[cite: 3]
     
     menuData[currentMenu].categories[catName].forEach(sub => {
         const btn = document.createElement('button'); 
@@ -117,7 +117,7 @@ function showSub(catName) {
             dynamicArea.setAttribute('data-selected-cat', catName);
         };
         container.appendChild(btn);
-    });
+    });[cite: 3]
     goToPage('page3');
 }
 
@@ -125,7 +125,7 @@ function updateColor(selectElement) {
     selectElement.classList.remove('bg-berminat', 'bg-followup', 'bg-tidak');
     if (selectElement.value === "Berminat") selectElement.classList.add('bg-berminat');
     else if (selectElement.value === "Follow up") selectElement.classList.add('bg-followup');
-    else if (selectElement.value === "Tidak berminat") selectElement.classList.add('bg-tidak');
+    else if (selectElement.value === "Tidak berminat") selectElement.classList.add('bg-tidak');[cite: 3]
 }
 
 function generateTextInputs() {
@@ -134,7 +134,7 @@ function generateTextInputs() {
     const selectedSub = document.getElementById('dynamic-input-area').getAttribute('data-selected-sub');
     
     container.innerHTML = ""; 
-    const config = configMap[selectedSub] || { col1: "Nama", hideCol2: true };
+    const config = configMap[selectedSub] || { col1: "Nama", hideCol2: true };[cite: 3]
 
     if (count > 0) {
         for (let i = 1; i <= count; i++) {
@@ -152,7 +152,7 @@ function generateTextInputs() {
                 } else {
                     html += `<input type="text" placeholder="${config.col2}" class="number-input-small col-2">`;
                 }
-            }
+            }[cite: 3]
 
             if (config.col3 && !config.hideCol3) {
                 if (config.type3 === "select") {
@@ -163,7 +163,7 @@ function generateTextInputs() {
                 } else {
                     html += `<input type="text" placeholder="${config.col3}" class="number-input-small col-3">`;
                 }
-            }
+            }[cite: 3]
 
             if (currentMenu === 'monitoring') {
                 html += `
@@ -173,7 +173,7 @@ function generateTextInputs() {
                         <option value="Tidak berminat">Tidak berminat</option>
                         <option value="Follow up">Follow up</option>
                     </select>`;
-            }
+            }[cite: 3]
 
             row.innerHTML = html;
             container.appendChild(row);
@@ -188,13 +188,19 @@ async function submitFinalData() {
     const subKategori = document.getElementById('dynamic-input-area').getAttribute('data-selected-sub');
     const rows = document.querySelectorAll('.input-row');
     
-    // Define logic for target sheet
+    // Logika Pemisahan Sheet berdasarkan Kategori
     let destinationSheet = "";
-    if (kategori === "Prioritas" || kategori === "Akuisisi Prioritas") {
+    if (kategori === "Payroll" || kategori === "Akuisisi Payroll") {
+        destinationSheet = "Penginputan Pipeline Payroll";
+    } else if (kategori === "Prioritas" || kategori === "Akuisisi Prioritas") {
         destinationSheet = "Penginputan Pipeline Prioritas";
+    } else if (kategori === "Pebisnis" || kategori === "Akuisisi Pebisnis") {
+        destinationSheet = "Penginputan Pipeline Pebisnis";
+    } else if (kategori === "Individu" || kategori === "Akuisisi Individu") {
+        destinationSheet = "Penginputan Pipeline Individu";
     } else {
-        destinationSheet = (currentMenu === 'monitoring') ? "Data Detail Penginputan" : "Data Detail Akuisisi";
-    }
+        destinationSheet = "Data Detail Akuisisi"; 
+    }[cite: 3]
     
     let dataToSubmit = [];
     for (let row of rows) {
@@ -205,24 +211,23 @@ async function submitFinalData() {
 
         const col2 = col2El ? col2El.value.trim() : "";
         const col3 = col3El ? col3El.value.trim() : "";
-        const statusVal = statusEl ? statusEl.value : "Selesai";
+        const statusVal = statusEl ? statusEl.value : "Selesai";[cite: 3]
 
         if (col1 === "" || (currentMenu === 'monitoring' && statusVal === "")) {
             alert("Mohon lengkapi data pada semua baris."); return;
-        }
+        }[cite: 3]
 
-        // Logic for formatting 'keterangan' (Column F) and 'jumlah' (Column E/G)
         let keteranganGabungan = col1;
         if (col2 && col3) keteranganGabungan += ` | ${col2} | ${col3}`;
-        else if (col2) keteranganGabungan += ` | ${col2}`;
+        else if (col2) keteranganGabungan += ` | ${col2}`;[cite: 3]
 
         dataToSubmit.push({
             targetSheet: destinationSheet,
             tanggal, kodeCabang, kategori, subKategori,
-            jumlah: col2 || "1", // Defaults to 1 if no quantity/CIF provided
+            jumlah: col2 || "1",
             keterangan: keteranganGabungan,
             status: statusVal
-        });
+        });[cite: 3]
     }
 
     if (dataToSubmit.length === 0) return;
@@ -237,14 +242,15 @@ async function submitFinalData() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload)
             })
-        );
+        );[cite: 3]
         await Promise.all(requests);
         alert(`Sukses! Data dikirim ke: ${destinationSheet}`);
         location.reload();
     } catch (err) {
         alert("Terjadi kesalahan: " + err);
         btn.innerText = "Submit Data"; btn.disabled = false;
-    }
+    }[cite: 3]
 }
 
 function goBackToCategories() { goToPage('page2'); }
+function goBackToMenu() { goToPage('page-main-menu'); }
