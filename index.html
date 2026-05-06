@@ -9,7 +9,7 @@
 <body>
 
     <div class="form-container">
-        <!-- HALAMAN 1: Tampil Pertama (Tanpa display: none) -->
+        <!-- HALAMAN 1: Validasi Kode Cabang -->
         <section id="page1">
             <h2>Data Monitoring & Akuisisi</h2>
             <div class="input-group">
@@ -24,7 +24,7 @@
             <button class="main-btn" onclick="validateStep1()">Next</button>
         </section>
 
-        <!-- HALAMAN LAINNYA: Wajib pakai display: none agar tidak tumpang tindih -->
+        <!-- HALAMAN 2: Menu Utama -->
         <section id="page-main-menu" style="display: none;">
             <h2>Pilih Menu Utama</h2>
             <button class="cat-btn" onclick="selectMainMenu('monitoring')">1. Monitoring</button>
@@ -32,12 +32,14 @@
             <button class="back-btn" onclick="goToPage('page1')">Kembali</button>
         </section>
 
+        <!-- HALAMAN 3: Pilih Kategori -->
         <section id="page2" style="display: none;">
             <h2 id="menu-title">Pilih Kategori</h2>
             <div id="category-options"></div>
             <button class="back-btn" onclick="goToPage('page-main-menu')">Kembali</button>
         </section>
 
+        <!-- HALAMAN 4: Sub Kategori & Input Data -->
         <section id="page3" style="display: none;">
             <h2 id="sub-title">Sub Kategori</h2>
             <div id="sub-options"></div>
