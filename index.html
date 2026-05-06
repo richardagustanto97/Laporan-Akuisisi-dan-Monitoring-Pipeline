@@ -59,4 +59,29 @@
 
     <script src="script.js"></script>
 </body>
+</html>            <h2 id="menu-title">Pilih Kategori</h2>
+            <div id="category-options"></div>
+            <button class="back-btn" onclick="goToPage('page-main-menu')">Kembali</button>
+        </section>
+
+        <!-- HALAMAN 3: Sub Kategori & Detail Input -->
+        <section id="page3" style="display: none;">
+            <h2 id="sub-title">Sub Kategori</h2>
+            <div id="sub-options"></div>
+
+            <div id="dynamic-input-area" style="display: none; margin-top: 20px; border-top: 1px solid #ddd; padding-top: 20px;">
+                <label id="question-label" style="font-weight: bold; margin-bottom: 10px; display: block;"></label>
+                <input type="number" id="follow-up-count" placeholder="Jumlah data" oninput="generateTextInputs()" style="margin-bottom: 15px;">
+                
+                <div id="text-inputs-container"></div>
+                
+                <button id="submit-btn" onclick="submitFinalData()" style="margin-top: 15px; background-color: #28a745;">Submit Data</button>
+            </div>
+
+            <button class="back-btn" onclick="goBackToCategories()" style="margin-top: 10px;">Kembali ke Kategori</button>
+        </section>
+    </div>
+
+    <script src="script.js"></script>
+</body>
 </html>
