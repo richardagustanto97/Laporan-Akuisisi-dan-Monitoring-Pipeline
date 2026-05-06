@@ -90,38 +90,53 @@ function generateTextInputs() {
 }
 
 async function submitFinalData() {
-    // ... (ambil data tanggal, kode cabang, dll) ...
+    const tanggal = document.getElementById('mon-date').value;
+    const kodeCabang = document.getElementById('branch-code').value;
+    const kategori = document.getElementById('dynamic-input-area').getAttribute('data-selected-cat');
+    const subKategori = document.getElementById('dynamic-input-area').getAttribute('data-selected-sub');
+    const rows = document.querySelectorAll('.input-row');
+    
+    // SESUAIKAN NAMA SHEET DI SINI (Harus sama persis dengan di Google Sheets)
+    let destinationSheet = (currentMenu === 'monitoring') ? "Data Detail Penginputan" : "Data Detail Akuisisi";
+    
+    const btn = document.getElementById('submit-btn');
+    btn.innerText = "Mengirim...";
+    btn.disabled = true;
 
     try {
         for (let row of rows) {
             const ketInput = row.querySelector('.dynamic-text-input');
             const statusSelect = row.querySelector('.status-select'); 
+            
             const ketValue = ketInput ? ketInput.value.trim() : "";
+            // Status diambil secara mandiri
             const statusValue = statusSelect ? statusSelect.value : "";
             
             if (ketValue !== "") {
-                const payload = { 
-                    targetSheet: destinationSheet, 
-                    tanggal: tanggal, 
-                    kodeCabang: kodeCabang, 
-                    kategori: kategori, 
-                    subKategori: subKategori, 
-                    jumlah: 1, 
-                    keterangan: ketValue, // Hanya berisi nama nasabah/PT
-                    status: statusValue    // Status dikirim sebagai variabel baru
+                const payload = {
+                    targetSheet: destinationSheet,
+                    tanggal: tanggal,
+                    kodeCabang: kodeCabang,
+                    kategori: kategori,
+                    subKategori: subKategori,
+                    jumlah: 1,
+                    keterangan: ketValue, // Nama PT saja
+                    status: statusValue    // Status akan masuk kolom F
                 };
 
-                await fetch(webAppUrl, { 
-                    method: "POST", 
-                    mode: "no-cors", 
-                    body: JSON.stringify(payload) 
+                await fetch(webAppUrl, {
+                    method: "POST",
+                    mode: "no-cors",
+                    body: JSON.stringify(payload)
                 });
             }
         }
-        alert(`Berhasil disimpan!`);
+        alert(`Data berhasil disimpan!`);
         location.reload();
     } catch (err) {
-        alert("Gagal: " + err);
+        alert("Gagal mengirim data: " + err);
+        btn.innerText = "Submit Data";
+        btn.disabled = false;
     }
 }
 
