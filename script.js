@@ -15,11 +15,11 @@ const menuData = {
     akuisisi: { 
         title: "Menu Akuisisi", 
         categories: { 
-            "Akuisisi Payroll": ["New Mitra Payroll", "New CIF Rek Payroll New Mitra", "New Rek Payroll New Mitra", "New CIF Rek Payroll Eksisting Mitra", "New Rek Payroll Eksisting Mitra", "MTBI", "AXA"], 
-            "Akuisisi Prioritas": ["RTW", "NTB", "MDS", "MDCI", "RDPU", "MTBI", "AXA"], 
-            "Akuisisi Pebisnis": ["MTB", "Giro", "EDC", "LVM", "Kopra", "MTBI", "AXA"], 
-            "Akuisisi Individu": ["GMM", "Livin", "Simpel", "Tab Reguler", "Multicurrency", "MTR", "Tab Now non GMM", "MTBI", "AXA"],
-    
+            "Akuisisi Payroll": ["New Mitra Payroll", "New CIF Rek Payroll New Mitra", "New Rek Payroll New Mitra", "New CIF Rek Payroll Eksisting Mitra", "New Rek Payroll Eksisting Mitra"], 
+            "Akuisisi Prioritas": ["RTW", "NTB", "MDS", "MDCI", "RDPU"], 
+            "Akuisisi Pebisnis": ["MTB", "Giro", "EDC", "LVM", "Kopra"], 
+            "Akuisisi Individu": ["GMM", "Livin", "Simpel", "Tab Reguler", "Multicurrency", "MTR", "Tab Now non GMM"],
+            "Akuisisi MTBI & AXA": ["MTBI", "AXA"]
         } 
     }
 };
@@ -41,16 +41,18 @@ const configMap = {
     "Kawasan": { col1: "Nama", col2: "CIF", type2: "text", col3: "Product Offering"},
     "Non pipeline": { col1: "Nama", col2: "CIF", type2: "text", col3: "Product Offering"},
     "New Mitra Payroll": { col1: "Nomor Mitra", col2: "Nama Mitra", type2: "text" },
-    "New CIF Rek Payroll New Mitra": { col1: "Nomor Rekening", hideCol2: true },
-    "New Rek Payroll New Mitra": { col1: "Nomor Rekening", hideCol2: true },
-    "MTBI": { col1: "Nomor Rekening", hideCol2: true },
-    "AXA": { col1: "Nomor CIF", col2: "FBI", type2: "text" },
+    "New CIF Rek Payroll New Mitra": { col1: "Nomor Mitra", col2: "Nomor Rekening", type2: "text"},
+    "New Rek Payroll New Mitra": { col1: "Nomor Mitra", col2: "Nomor Rekening", type2: "text"},
+    "New CIF Rek Payroll Eksisting Mitra": { col1: "Nomor Mitra", col2: "Nomor Rekening", type2: "text"},
+    "New Rek Payroll Eksisting Mitra" : { col1: "Nomor Mitra", col2: "Nomor Rekening", type2: "text"},
+    "MTBI": { col1: "Nomor Rekening", col2: "Jenis Nasabah", type2: "select", options: ["Individu", "Badan Usaha","Payroll","Prioritas"] },
+    "AXA": { col1: "Nomor CIF", col2: "Jenis Nasabah", type2: "select", options: ["Individu", "Badan Usaha","Payroll","Prioritas"],col3: "FBI", type3: "text" },
     "RTW": { col1: "Nomor CIF", hideCol2: true },
     "NTB": { col1: "Nomor CIF", hideCol2: true },
     "MDS": { col1: "Nomor CIF", col2: "Nominal", type2: "text" },
     "MDCI": { col1: "Nomor CIF", col2: "Nominal", type2: "text" },
     "RDPU": { col1: "Nomor CIF", col2: "Nominal", type2: "text" },
-    "Kopra": { col1: "Nama Perusahaan", hideCol2: true },
+    "Kopra": { col1: "Nomor CIF", hideCol2: true },
     "GMM": { col1: "Nomor Rekening", hideCol2: true },
     "Livin": { col1: "Nomor Rekening", hideCol2: true },
     "Simpel": { col1: "Nomor Rekening", hideCol2: true },
@@ -58,6 +60,10 @@ const configMap = {
     "Multicurrency": { col1: "Nomor Rekening", hideCol2: true },
     "MTR": { col1: "Nomor Rekening", hideCol2: true },
     "Tab Now non GMM": { col1: "Nomor Rekening", hideCol2: true },
+    "MTB": { col1: "Nomor Rekening", hideCol2: true},
+    "Giro": { col1: "Nomor Rekening", hideCol2: true},
+    "EDC": { hideCol1: true, col2: "Nama Merchant", type2: "text" },
+    "LVM": { hideCol1: true, col2: "Nama Merchant", type2: "text" }
 };
 
 let currentMenu = ""; 
@@ -128,25 +134,54 @@ function generateTextInputs() {
     const container = document.getElementById('text-inputs-container');
     const selectedSub = document.getElementById('dynamic-input-area').getAttribute('data-selected-sub');
     container.innerHTML = ""; 
+    
     const config = configMap[selectedSub] || { col1: "Nama", hideCol2: true };
+    
     if (count > 0) {
         for (let i = 1; i <= count; i++) {
-            const row = document.createElement('div'); row.className = "input-row";
-            let html = `<input type="text" placeholder="${i}. ${config.col1}" class="dynamic-text-input col-main">`;
+            const row = document.createElement('div'); 
+            row.className = "input-row";
+            row.style.display = "flex";
+            row.style.gap = "20px";
+            row.style.marginBottom = "20px";
+
+            let html = "";
+
+            if (config.hideCol1) {
+                // Gunakan placeholder agar Apps Script tidak bingung, tapi input ini disembunyikan
+                html += `<input type="hidden" class="dynamic-text-input col-main" value="">`;
+            } else {
+                html += `<input type="text" placeholder="${i}. ${config.col1}" class="dynamic-text-input col-main" style="flex:2.5;">`;
+            }
+
             if (!config.hideCol2) {
                 if (config.type2 === "select") {
-                    html += `<select class="number-input-small col-2"><option value="" disabled selected>${config.col2}</option>${config.options.map(opt => `<option value="${opt}">${opt}</option>`).join('')}</select>`;
-                } else { html += `<input type="text" placeholder="${config.col2}" class="number-input-small col-2">`; }
+                    html += `<select class="number-input-small col-2" style="flex:1.5;"><option value="" disabled selected>${config.col2}</option>${config.options.map(opt => `<option value="${opt}">${opt}</option>`).join('')}</select>`;
+                } else { 
+                    html += `<input type="text" placeholder="${config.col2}" class="number-input-small col-2" style="flex:1.5;">`; 
+                }
             }
+
             if (config.col3 && !config.hideCol3) {
                 if (config.type3 === "select") {
-                    html += `<select class="number-input-small col-3"><option value="" disabled selected>${config.col3}</option>${config.options.map(opt => `<option value="${opt}">${opt}</option>`).join('')}</select>`;
-                } else { html += `<input type="text" placeholder="${config.col3}" class="number-input-small col-3">`; }
+                    html += `<select class="number-input-small col-3" style="flex:1.5;"><option value="" disabled selected>${config.col3}</option>${config.options.map(opt => `<option value="${opt}">${opt}</option>`).join('')}</select>`;
+                } else { 
+                    html += `<input type="text" placeholder="${config.col3}" class="number-input-small col-3" style="flex:1.5;">`; 
+                }
             }
+
             if (currentMenu === 'monitoring') {
-                html += `<select class="status-select col-status" onchange="updateColor(this)"><option value="" disabled selected>Status</option><option value="Berminat">Berminat</option><option value="Tidak berminat">Tidak berminat</option><option value="Follow up">Follow up</option></select>`;
+                html += `
+                <select class="status-select col-status" onchange="updateColor(this)" style="flex:1.5;">
+                    <option value="" disabled selected>Status</option>
+                    <option value="Berminat">Berminat</option>
+                    <option value="Tidak berminat">Tidak berminat</option>
+                    <option value="Follow up">Follow up</option>
+                </select>`;
             }
-            row.innerHTML = html; container.appendChild(row);
+            
+            row.innerHTML = html; 
+            container.appendChild(row);
         }
     }
 }
@@ -160,26 +195,47 @@ async function submitFinalData() {
     
     let destinationSheet = "";
     if (currentMenu === 'monitoring') {
-        if (kategori.includes("Payroll")) { destinationSheet = "Penginputan Pipeline Payroll"; }
-        else if (kategori.includes("Prioritas")) { destinationSheet = "Penginputan Pipeline Prioritas"; }
-        else if (kategori.includes("Pebisnis")) { destinationSheet = "Penginputan Pipeline Pebisnis"; }
-        else if (kategori.includes("Individu")) { destinationSheet = "Penginputan Pipeline Individu"; }
+        if (kategori.includes("Payroll")) destinationSheet = "Penginputan Pipeline Payroll";
+        else if (kategori.includes("Prioritas")) destinationSheet = "Penginputan Pipeline Prioritas";
+        else if (kategori.includes("Pebisnis")) destinationSheet = "Penginputan Pipeline Pebisnis";
+        else if (kategori.includes("Individu")) destinationSheet = "Penginputan Pipeline Individu";
     } else if (currentMenu === 'akuisisi') {
-        if (kategori === "Akuisisi Payroll") { destinationSheet = "Akuisisi Payroll"; }
-        else if (kategori === "Akuisisi Prioritas") { destinationSheet = "Akuisisi Prio"; }
-        else if (kategori === "Akuisisi Pebisnis") { destinationSheet = "Akuisisi Pebisnis"; }
-        else if (kategori === "Akuisisi Individu") { destinationSheet = "Akuisisi Individu"; }
-        else { destinationSheet = "Data Detail Akuisisi"; }
+        if (kategori === "Akuisisi Payroll") destinationSheet = "Akusisi Payroll";
+        else if (kategori === "Akuisisi Prioritas") destinationSheet = "Akuisisi Prio";
+        else if (kategori === "Akuisisi Pebisnis") destinationSheet = "Akuisisi Pebisnis";
+        else if (kategori === "Akuisisi Individu") destinationSheet = "Akuisisi Individu";
+        else if (kategori === "Akuisisi MTBI & AXA") destinationSheet = "Akuisisi MTBI & AXA";
+        else destinationSheet = "Data Detail Akuisisi";
     }
     
     let dataToSubmit = [];
+    const config = configMap[subKategori] || {};
+
     for (let row of rows) {
         const val1 = row.querySelector('.col-main').value.trim();
         const val2 = row.querySelector('.col-2') ? row.querySelector('.col-2').value.trim() : "";
         const val3 = row.querySelector('.col-3') ? row.querySelector('.col-3').value.trim() : "";
         const statusVal = row.querySelector('.col-status') ? row.querySelector('.col-status').value : "Selesai";
 
-        if (val1 === "" || (currentMenu === 'monitoring' && statusVal === "")) { alert("Mohon lengkapi data."); return; }
+        // Validasi
+        if (config.hideCol1) {
+            if (val2 === "") { alert("Mohon isi Nama Merchant."); return; }
+        } else {
+            if (val1 === "") { alert("Mohon lengkapi data utama."); return; }
+        }
+
+        // --- SOLUSI UTAMA ---
+        // Kita HANYA mengirimkan 'namaNasabah' dan 'cifNasabah'.
+        // Karena Apps Script Anda sepertinya sudah baku urutannya.
+        let finalNama = val1;
+        let finalRek = val2;
+
+        if (config.hideCol1) {
+            // Jika EDC/LVM:
+            // Kosongkan kolom E (Nama Nasabah) agar Kolom F (Nomor Rekening) terisi Nama Merchant
+            finalNama = ""; 
+            finalRek = val2; 
+        }
 
         dataToSubmit.push({
             targetSheet: destinationSheet,
@@ -188,8 +244,8 @@ async function submitFinalData() {
             kategori: kategori,      
             subKategori: subKategori,
             total: "1",              
-            namaNasabah: val1,       
-            cifNasabah: val2,        
+            namaNasabah: finalNama, // Akan masuk ke Kolom E
+            cifNasabah: finalRek,   // Akan masuk ke Kolom F (Atau Nama Merchant jika EDC/LVM)
             produk: val3,            
             status: statusVal        
         });
