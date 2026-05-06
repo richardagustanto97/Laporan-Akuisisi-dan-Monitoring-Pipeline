@@ -1,6 +1,3 @@
-// ==========================================
-// 1. KONFIGURASI & DATA MASTER
-// ==========================================
 const webAppUrl = "https://script.google.com/macros/s/AKfycbwRIcuS9p1rGAj0JvlGMzKUHj6gev0KfekjlnBtNDjrxHpNrJTpRNKiXPfkvk6oMe7B/exec";
 
 const validCodes = ["11900", "11902", "11903", "11904", "11906", "11907", "11912", "11916", "11920", "11923", "11924", "11929", "11931", "11932", "11934", "11935", "11936", "11937"];
@@ -53,9 +50,6 @@ const placeholderMap = {
 
 let currentMenu = ""; 
 
-// ==========================================
-// 2. FUNGSI NAVIGASI
-// ==========================================
 function goToPage(pageId) {
     document.querySelectorAll('section').forEach(s => s.style.display = 'none');
     document.getElementById(pageId).style.display = 'block';
@@ -111,9 +105,6 @@ function showSub(catName) {
     goToPage('page3');
 }
 
-// ==========================================
-// 3. LOGIKA INPUT DINAMIS & WARNA
-// ==========================================
 function updateColor(selectElement) {
     selectElement.classList.remove('bg-berminat', 'bg-followup', 'bg-tidak');
     if (selectElement.value === "Berminat") selectElement.classList.add('bg-berminat');
@@ -125,7 +116,6 @@ function generateTextInputs() {
     const count = document.getElementById('follow-up-count').value;
     const container = document.getElementById('text-inputs-container');
     const selectedSub = document.getElementById('dynamic-input-area').getAttribute('data-selected-sub');
-    
     container.innerHTML = ""; 
     const placeholderText = placeholderMap[selectedSub] || "Masukkan detail keterangan";
 
@@ -133,9 +123,7 @@ function generateTextInputs() {
         for (let i = 1; i <= count; i++) {
             const row = document.createElement('div');
             row.className = "input-row";
-            
             if (currentMenu === 'monitoring') {
-                // TAMPILAN MONITORING: Menggunakan Picklist Berwarna
                 row.innerHTML = `
                     <input type="text" placeholder="${i}. ${placeholderText}" class="dynamic-text-input">
                     <select class="status-select" onchange="updateColor(this)">
@@ -143,22 +131,15 @@ function generateTextInputs() {
                         <option value="Berminat">Berminat</option>
                         <option value="Follow up">Follow up</option>
                         <option value="Tidak berminat">Tidak berminat</option>
-                    </select>
-                `;
+                    </select>`;
             } else {
-                // TAMPILAN AKUISISI: Hanya input teks biasa
-                row.innerHTML = `
-                    <input type="text" placeholder="${i}. ${placeholderText}" class="dynamic-text-input" style="flex: 1;">
-                `;
+                row.innerHTML = `<input type="text" placeholder="${i}. ${placeholderText}" class="dynamic-text-input" style="flex: 1;">`;
             }
             container.appendChild(row);
         }
     }
 }
 
-// ==========================================
-// 4. PENGIRIMAN DATA KE GOOGLE SHEETS
-// ==========================================
 async function submitFinalData() {
     const tanggal = document.getElementById('mon-date').value;
     const kodeCabang = document.getElementById('branch-code').value;
@@ -175,37 +156,19 @@ async function submitFinalData() {
         for (let row of rows) {
             const ketInput = row.querySelector('.dynamic-text-input');
             const statusSelect = row.querySelector('.status-select'); 
-            
             const ketValue = ketInput ? ketInput.value.trim() : "";
             const statusValue = statusSelect ? statusSelect.value : "";
             
             if (ketValue !== "") {
-                // Gabungkan status jika ada (Hanya untuk menu Monitoring)
-                const ketLengkap = (currentMenu === 'monitoring' && statusValue) 
-                                   ? `${ketValue} (${statusValue})` 
-                                   : ketValue;
-
-                const payload = {
-                    targetSheet: destinationSheet,
-                    tanggal: tanggal,
-                    kodeCabang: kodeCabang,
-                    kategori: kategori,
-                    subKategori: subKategori,
-                    jumlah: 1,
-                    keterangan: ketLengkap
-                };
-
-                await fetch(webAppUrl, {
-                    method: "POST",
-                    mode: "no-cors",
-                    body: JSON.stringify(payload)
-                });
+                const ketLengkap = (currentMenu === 'monitoring' && statusValue) ? `${ketValue} (${statusValue})` : ketValue;
+                const payload = { targetSheet: destinationSheet, tanggal: tanggal, kodeCabang: kodeCabang, kategori: kategori, subKategori: subKategori, jumlah: 1, keterangan: ketLengkap };
+                await fetch(webAppUrl, { method: "POST", mode: "no-cors", body: JSON.stringify(payload) });
             }
         }
         alert(`Data ${currentMenu} berhasil disimpan!`);
         location.reload();
     } catch (err) {
-        alert("Gagal mengirim data: " + err);
+        alert("Gagal: " + err);
         btn.innerText = "Submit Data";
         btn.disabled = false;
     }
