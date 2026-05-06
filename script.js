@@ -193,7 +193,14 @@ async function submitFinalData() {
     const subKategori = document.getElementById('dynamic-input-area').getAttribute('data-selected-sub');
     const rows = document.querySelectorAll('.input-row');
     
+    // 1. CEK APAKAH ADA BARIS DATA
+    if (rows.length === 0) {
+        alert("Mohon masukkan jumlah data terlebih dahulu.");
+        return;
+    }
+
     let destinationSheet = "";
+    // ... (logika penentuan destinationSheet tetap sama)
     if (currentMenu === 'monitoring') {
         if (kategori.includes("Payroll")) destinationSheet = "Penginputan Pipeline Payroll";
         else if (kategori.includes("Prioritas")) destinationSheet = "Penginputan Pipeline Prioritas";
@@ -211,28 +218,48 @@ async function submitFinalData() {
     let dataToSubmit = [];
     const config = configMap[subKategori] || {};
 
-    for (let row of rows) {
-        const val1 = row.querySelector('.col-main').value.trim();
-        const val2 = row.querySelector('.col-2') ? row.querySelector('.col-2').value.trim() : "";
-        const val3 = row.querySelector('.col-3') ? row.querySelector('.col-3').value.trim() : "";
-        const statusVal = row.querySelector('.col-status') ? row.querySelector('.col-status').value : "Selesai";
+    // 2. VALIDASI SETIAP BARIS
+    for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        const rowNum = i + 1; // Untuk pesan error agar user tahu baris mana yang kosong
 
-        // Validasi
-        if (config.hideCol1) {
-            if (val2 === "") { alert("Mohon isi Nama Merchant."); return; }
-        } else {
-            if (val1 === "") { alert("Mohon lengkapi data utama."); return; }
+        const val1 = row.querySelector('.col-main').value.trim();
+        const val2El = row.querySelector('.col-2');
+        const val2 = val2El ? val2El.value.trim() : "";
+        const val3El = row.querySelector('.col-3');
+        const val3 = val3El ? val3El.value.trim() : "";
+        const statusEl = row.querySelector('.col-status');
+        const statusVal = statusEl ? statusEl.value : "Selesai";
+
+        // Cek Kolom 1 (Jika tidak disembunyikan)
+        if (!config.hideCol1 && val1 === "") {
+            alert(`Baris ${rowNum}: ${config.col1 || 'Nama'} harus diisi.`);
+            return;
         }
 
-        // --- SOLUSI UTAMA ---
-        // Kita HANYA mengirimkan 'namaNasabah' dan 'cifNasabah'.
-        // Karena Apps Script Anda sepertinya sudah baku urutannya.
+        // Cek Kolom 2 (Jika tidak disembunyikan)
+        if (!config.hideCol2 && val2 === "") {
+            alert(`Baris ${rowNum}: ${config.col2 || 'Data'} harus diisi.`);
+            return;
+        }
+
+        // Cek Kolom 3 (Jika ada)
+        if (config.col3 && !config.hideCol3 && val3 === "") {
+            alert(`Baris ${rowNum}: ${config.col3} harus dipilih/diisi.`);
+            return;
+        }
+
+        // Cek Status (Khusus Menu Monitoring)
+        if (currentMenu === 'monitoring' && !statusVal) {
+            alert(`Baris ${rowNum}: Status harus dipilih.`);
+            return;
+        }
+
+        // Jika lolos validasi, masukkan ke array
         let finalNama = val1;
         let finalRek = val2;
 
         if (config.hideCol1) {
-            // Jika EDC/LVM:
-            // Kosongkan kolom E (Nama Nasabah) agar Kolom F (Nomor Rekening) terisi Nama Merchant
             finalNama = ""; 
             finalRek = val2; 
         }
@@ -244,13 +271,14 @@ async function submitFinalData() {
             kategori: kategori,      
             subKategori: subKategori,
             total: "1",              
-            namaNasabah: finalNama, // Akan masuk ke Kolom E
-            cifNasabah: finalRek,   // Akan masuk ke Kolom F (Atau Nama Merchant jika EDC/LVM)
+            namaNasabah: finalNama,
+            cifNasabah: finalRek,
             produk: val3,            
             status: statusVal        
         });
     }
 
+    // 3. PROSES KIRIM DATA (Jika semua baris sudah valid)
     const btn = document.getElementById('submit-btn');
     btn.innerText = "Mengirim..."; btn.disabled = true;
 
@@ -263,7 +291,7 @@ async function submitFinalData() {
             })
         );
         await Promise.all(requests);
-        alert(`Sukses! Data dikirim ke: ${destinationSheet}`);
+        alert(`Sukses! ${dataToSubmit.length} data dikirim ke: ${destinationSheet}`);
         location.reload();
     } catch (err) {
         alert("Kesalahan: " + err);

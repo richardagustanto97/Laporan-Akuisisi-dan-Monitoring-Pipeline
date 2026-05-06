@@ -3,54 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Pelaporan Pipeline</title>
+    <title>Data Monitoring & Akuisisi</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="form-container">
-        <!-- HALAMAN 1 -->
+    <div class="container">
+        <!-- PAGE 1: Input Cabang & Tanggal -->
         <section id="page1">
             <h2>Data Monitoring & Akuisisi</h2>
             <div class="input-group">
                 <label>Tanggal Pelaporan</label>
-                <input type="date" id="mon-date" required>
+                <input type="date" id="mon-date">
             </div>
             <div class="input-group">
                 <label>Kode Cabang</label>
                 <input type="text" id="branch-code" placeholder="Masukkan 5 digit kode">
-                <p id="error-msg" style="color: red; display: none; font-size: 14px; margin-top: 5px;">Kode Cabang tidak valid.</p>
+                <p id="error-msg" style="color: red; display: none; font-size: 12px;">Kode Cabang tidak terdaftar!</p>
             </div>
-            <!-- Pastikan onclick memanggil fungsi yang benar -->
-            <button class="main-btn" onclick="validateStep1()">Next</button>
+            
+            <button onclick="validateStep1()" class="submit-btn">Next</button>
+            
+            <!-- Tombol Baru -->
+            <a href="https://docs.google.com/spreadsheets/d/18k4W2U653IU7YOkOPNlcmW_aFf7xyqagGq4MpkQMN3E/edit?gid=710108138#gid=710108138" 
+               target="_blank" class="secondary-btn">
+               Ingin melihat hasil input? Klik Disini
+            </a>
         </section>
 
-        <!-- HALAMAN 2: Menu Utama -->
-        <section id="page-main-menu" style="display: none;">
-            <h2>Pilih Menu Utama</h2>
-            <button class="cat-btn" onclick="selectMainMenu('monitoring')">1. Monitoring</button>
-            <button class="cat-btn" onclick="selectMainMenu('akuisisi')">2. Akuisisi</button>
-            <button class="back-btn" onclick="goToPage('page1')">Kembali</button>
+        <!-- PAGE 2: Main Menu -->
+        <section id="page-main-menu" style="display:none;">
+            <h2 id="main-title">Pilih Menu Utama</h2>
+            <div class="menu-grid">
+                <button class="menu-btn" onclick="selectMainMenu('monitoring')">Menu Monitoring</button>
+                <button class="menu-btn" onclick="selectMainMenu('akuisisi')">Menu Akuisisi</button>
+            </div>
         </section>
 
-        <!-- HALAMAN 3 & 4 (Tetap sesuai versi sebelumnya) -->
-        <section id="page2" style="display: none;">
-            <h2 id="menu-title">Pilih Kategori</h2>
-            <div id="category-options"></div>
+        <!-- PAGE 3: Categories -->
+        <section id="page2" style="display:none;">
+            <h2 id="menu-title">Kategori</h2>
+            <div id="category-options" class="menu-grid"></div>
             <button class="back-btn" onclick="goToPage('page-main-menu')">Kembali</button>
         </section>
 
-        <section id="page3" style="display: none;">
+        <!-- PAGE 4: Sub Categories & Input Detail -->
+        <section id="page3" style="display:none;">
             <h2 id="sub-title">Sub Kategori</h2>
-            <div id="sub-options"></div>
-            <div id="dynamic-input-area" style="display: none; margin-top: 20px;">
+            <div id="sub-options" class="menu-grid sub-grid"></div>
+            <hr>
+            <div id="dynamic-input-area" style="display:none;">
                 <label id="question-label" style="font-weight: bold;"></label>
-                <input type="number" id="follow-up-count" placeholder="Jumlah data" oninput="generateTextInputs()">
+                <div class="input-group" style="margin-top: 15px;">
+                    <label>Jumlah Data yang di Input</label>
+                    <input type="number" id="follow-up-count" placeholder="Contoh: 1" oninput="generateTextInputs()">
+                </div>
                 <div id="text-inputs-container"></div>
                 <button id="submit-btn" class="submit-btn" onclick="submitFinalData()">Submit Data</button>
             </div>
             <button class="back-btn" onclick="goBackToCategories()">Kembali</button>
         </section>
     </div>
+
     <script src="script.js"></script>
 </body>
 </html>
