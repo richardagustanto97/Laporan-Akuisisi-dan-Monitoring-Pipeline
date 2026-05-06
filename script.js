@@ -3,50 +3,11 @@ const webAppUrl = "https://script.google.com/macros/s/AKfycbwRIcuS9p1rGAj0JvlGMz
 const validCodes = ["11900", "11902", "11903", "11904", "11906", "11907", "11912", "11916", "11920", "11923", "11924", "11929", "11931", "11932", "11934", "11935", "11936", "11937"];
 
 const menuData = {
-    monitoring: {
-        title: "Menu Monitoring",
-        categories: {
-            "Payroll": ["Pipeline PMP", "Pipeline Badan Usaha", "Diluar Pipeline"],
-            "Prioritas": ["Pipeline RTW atau NTB", "Diluar Pipeline"],
-            "Pebisnis": ["Pipeline Data Leakage", "Pipeline GMM", "Leads Kopra", "Pipeline nasabah dari Area", "Kawasan", "Non Pipeline dan Non Kawasan"],
-            "Individu": ["Pipeline Cakra", "Kawasan", "Non pipeline"]
-        }
-    },
-    akuisisi: {
-        title: "Menu Akuisisi",
-        categories: {
-            "Akuisisi Payroll": ["New Mitra Payroll", "New CIF Payroll", "New Payroll", "Eksisting Payroll", "MTBI", "AXA"],
-            "Akuisisi Prioritas": ["RTW", "NTB", "MDS", "MDCI", "RDPU", "MTBI", "AXA"],
-            "Akuisisi Pebisnis": ["MTB", "Giro", "EDC", "LVM", "Kopra", "MTBI", "AXA"],
-            "Akuisisi Individu": ["GMM", "Livin", "Simpel", "Tab Reguler", "Multicurrency", "MTR", "Tab Now non GMM", "MTBI", "AXA"],
-            "Hasil Akuisisi All": ["EDC", "LVM", "Livin", "Kopra", "MDS", "MDCI", "RDPU", "AXA", "Payroll", "Tab Now", "MTB", "Giro", "Multicurrency", "Tab Reguler", "MTR", "Simpel", "MTBI"]
-        }
-    }
+    monitoring: { title: "Menu Monitoring", categories: { "Payroll": ["Pipeline PMP", "Pipeline Badan Usaha", "Diluar Pipeline"], "Prioritas": ["Pipeline RTW atau NTB", "Diluar Pipeline"], "Pebisnis": ["Pipeline Data Leakage", "Pipeline GMM", "Leads Kopra", "Pipeline nasabah dari Area", "Kawasan", "Non Pipeline dan Non Kawasan"], "Individu": ["Pipeline Cakra", "Kawasan", "Non pipeline"] } },
+    akuisisi: { title: "Menu Akuisisi", categories: { "Akuisisi Payroll": ["New Mitra Payroll", "New CIF Payroll", "New Payroll", "Eksisting Payroll", "MTBI", "AXA"], "Akuisisi Prioritas": ["RTW", "NTB", "MDS", "MDCI", "RDPU", "MTBI", "AXA"], "Akuisisi Pebisnis": ["MTB", "Giro", "EDC", "LVM", "Kopra", "MTBI", "AXA"], "Akuisisi Individu": ["GMM", "Livin", "Simpel", "Tab Reguler", "Multicurrency", "MTR", "Tab Now non GMM", "MTBI", "AXA"], "Hasil Akuisisi All": ["EDC", "LVM", "Livin", "Kopra", "MDS", "MDCI", "RDPU", "AXA", "Payroll", "Tab Now", "MTB", "Giro", "Multicurrency", "Tab Reguler", "MTR", "Simpel", "MTBI"] } }
 };
 
-const placeholderMap = {
-    "Pipeline PMP": "Nama PT / Jml Prospek",
-    "Pipeline Badan Usaha": "Nama PT / Jml Prospek",
-    "Diluar Pipeline": "Nama PT / Jml Prospek",
-    "Pipeline RTW atau NTB": "Nama / Product offering",
-    "Pipeline Data Leakage": "Nama / Product offering (LVM/EDC)",
-    "Pipeline GMM": "Nama / Product offering (LVM/EDC)",
-    "Leads Kopra": "Nama PT",
-    "Pipeline nasabah dari Area": "Nama / Product offering (LVM/EDC/Kopra)",
-    "Kawasan": "Nama / Product offering (LVM/EDC/Kopra)",
-    "Non Pipeline dan Non Kawasan": "Nama / Product offering (LVM/EDC/Kopra)",
-    "Pipeline Cakra": "Nama / Product offering",
-    "Non pipeline": "Nama / Product offering",
-    "New Mitra Payroll": "Nomor Mitra / Nama Mitra",
-    "New CIF Payroll": "Nomor Rekening",
-    "AXA": "Jumlah Case / FBI",
-    "RTW": "Nomor CIF",
-    "NTB": "Nomor CIF",
-    "MDS": "Nominal",
-    "MTB": "Nomor Rekening",
-    "EDC": "Nama Aplikasi (Nasabah)",
-    "Kopra": "Nama Perusahaan / Aplikasi"
-};
+const placeholderMap = { "Pipeline PMP": "Nama PT / Jml Prospek", "Pipeline Badan Usaha": "Nama PT / Jml Prospek", "Diluar Pipeline": "Nama PT / Jml Prospek", "Pipeline RTW atau NTB": "Nama / Product offering", "Pipeline Data Leakage": "Nama / Product offering (LVM/EDC)", "Pipeline GMM": "Nama / Product offering (LVM/EDC)", "Leads Kopra": "Nama PT", "Pipeline nasabah dari Area": "Nama / Product offering (LVM/EDC/Kopra)", "Kawasan": "Nama / Product offering (LVM/EDC/Kopra)", "Non Pipeline dan Non Kawasan": "Nama / Product offering (LVM/EDC/Kopra)", "Pipeline Cakra": "Nama / Product offering", "Non pipeline": "Nama / Product offering", "New Mitra Payroll": "Nomor Mitra / Nama Mitra", "New CIF Payroll": "Nomor Rekening", "AXA": "Jumlah Case / FBI", "RTW": "Nomor CIF", "NTB": "Nomor CIF", "MDS": "Nominal", "MTB": "Nomor Rekening", "EDC": "Nama Aplikasi (Nasabah)", "Kopra": "Nama Perusahaan / Aplikasi" };
 
 let currentMenu = ""; 
 
@@ -59,11 +20,8 @@ function validateStep1() {
     const codeInput = document.getElementById('branch-code').value.trim();
     const dateInput = document.getElementById('mon-date').value;
     if (dateInput === "") { alert("Silahkan isi tanggal."); return; }
-    if (validCodes.includes(codeInput)) {
-        goToPage('page-main-menu');
-    } else {
-        document.getElementById('error-msg').style.display = 'block';
-    }
+    if (validCodes.includes(codeInput)) { goToPage('page-main-menu'); } 
+    else { document.getElementById('error-msg').style.display = 'block'; }
 }
 
 function selectMainMenu(menu) {
@@ -87,7 +45,6 @@ function showSub(catName) {
     container.innerHTML = "";
     dynamicArea.style.display = 'none';
     document.getElementById('sub-title').innerText = "Kategori: " + catName;
-
     menuData[currentMenu].categories[catName].forEach(sub => {
         const btn = document.createElement('button');
         btn.className = 'cat-btn';
@@ -117,21 +74,13 @@ function generateTextInputs() {
     const container = document.getElementById('text-inputs-container');
     const selectedSub = document.getElementById('dynamic-input-area').getAttribute('data-selected-sub');
     container.innerHTML = ""; 
-    const placeholderText = placeholderMap[selectedSub] || "Masukkan detail keterangan";
-
+    const placeholderText = placeholderMap[selectedSub] || "Masukkan detail";
     if (count > 0) {
         for (let i = 1; i <= count; i++) {
             const row = document.createElement('div');
             row.className = "input-row";
             if (currentMenu === 'monitoring') {
-                row.innerHTML = `
-                    <input type="text" placeholder="${i}. ${placeholderText}" class="dynamic-text-input">
-                    <select class="status-select" onchange="updateColor(this)">
-                        <option value="" disabled selected>Status</option>
-                        <option value="Berminat">Berminat</option>
-                        <option value="Follow up">Follow up</option>
-                        <option value="Tidak berminat">Tidak berminat</option>
-                    </select>`;
+                row.innerHTML = `<input type="text" placeholder="${i}. ${placeholderText}" class="dynamic-text-input"><select class="status-select" onchange="updateColor(this)"><option value="" disabled selected>Status</option><option value="Berminat">Berminat</option><option value="Follow up">Follow up</option><option value="Tidak berminat">Tidak berminat</option></select>`;
             } else {
                 row.innerHTML = `<input type="text" placeholder="${i}. ${placeholderText}" class="dynamic-text-input" style="flex: 1;">`;
             }
@@ -146,26 +95,22 @@ async function submitFinalData() {
     const kategori = document.getElementById('dynamic-input-area').getAttribute('data-selected-cat');
     const subKategori = document.getElementById('dynamic-input-area').getAttribute('data-selected-sub');
     const rows = document.querySelectorAll('.input-row');
-    
     let destinationSheet = (currentMenu === 'monitoring') ? "Data Detail Penginputan" : "Data Detail Akuisisi";
     const btn = document.getElementById('submit-btn');
     btn.innerText = "Mengirim...";
     btn.disabled = true;
-
     try {
         for (let row of rows) {
-            const ketInput = row.querySelector('.dynamic-text-input');
-            const statusSelect = row.querySelector('.status-select'); 
-            const ketValue = ketInput ? ketInput.value.trim() : "";
+            const ketValue = row.querySelector('.dynamic-text-input').value.trim();
+            const statusSelect = row.querySelector('.status-select');
             const statusValue = statusSelect ? statusSelect.value : "";
-            
             if (ketValue !== "") {
                 const ketLengkap = (currentMenu === 'monitoring' && statusValue) ? `${ketValue} (${statusValue})` : ketValue;
-                const payload = { targetSheet: destinationSheet, tanggal: tanggal, kodeCabang: kodeCabang, kategori: kategori, subKategori: subKategori, jumlah: 1, keterangan: ketLengkap };
+                const payload = { targetSheet: destinationSheet, tanggal, kodeCabang, kategori, subKategori, jumlah: 1, keterangan: ketLengkap };
                 await fetch(webAppUrl, { method: "POST", mode: "no-cors", body: JSON.stringify(payload) });
             }
         }
-        alert(`Data ${currentMenu} berhasil disimpan!`);
+        alert(`Berhasil disimpan!`);
         location.reload();
     } catch (err) {
         alert("Gagal: " + err);
