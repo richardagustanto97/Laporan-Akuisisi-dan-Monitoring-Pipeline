@@ -90,32 +90,38 @@ function generateTextInputs() {
 }
 
 async function submitFinalData() {
-    const tanggal = document.getElementById('mon-date').value;
-    const kodeCabang = document.getElementById('branch-code').value;
-    const kategori = document.getElementById('dynamic-input-area').getAttribute('data-selected-cat');
-    const subKategori = document.getElementById('dynamic-input-area').getAttribute('data-selected-sub');
-    const rows = document.querySelectorAll('.input-row');
-    let destinationSheet = (currentMenu === 'monitoring') ? "Data Detail Penginputan" : "Data Detail Akuisisi";
-    const btn = document.getElementById('submit-btn');
-    btn.innerText = "Mengirim...";
-    btn.disabled = true;
+    // ... (ambil data tanggal, kode cabang, dll) ...
+
     try {
         for (let row of rows) {
-            const ketValue = row.querySelector('.dynamic-text-input').value.trim();
-            const statusSelect = row.querySelector('.status-select');
+            const ketInput = row.querySelector('.dynamic-text-input');
+            const statusSelect = row.querySelector('.status-select'); 
+            const ketValue = ketInput ? ketInput.value.trim() : "";
             const statusValue = statusSelect ? statusSelect.value : "";
+            
             if (ketValue !== "") {
-                const ketLengkap = (currentMenu === 'monitoring' && statusValue) ? `${ketValue} (${statusValue})` : ketValue;
-                const payload = { targetSheet: destinationSheet, tanggal, kodeCabang, kategori, subKategori, jumlah: 1, keterangan: ketLengkap };
-                await fetch(webAppUrl, { method: "POST", mode: "no-cors", body: JSON.stringify(payload) });
+                const payload = { 
+                    targetSheet: destinationSheet, 
+                    tanggal: tanggal, 
+                    kodeCabang: kodeCabang, 
+                    kategori: kategori, 
+                    subKategori: subKategori, 
+                    jumlah: 1, 
+                    keterangan: ketValue, // Hanya berisi nama nasabah/PT
+                    status: statusValue    // Status dikirim sebagai variabel baru
+                };
+
+                await fetch(webAppUrl, { 
+                    method: "POST", 
+                    mode: "no-cors", 
+                    body: JSON.stringify(payload) 
+                });
             }
         }
         alert(`Berhasil disimpan!`);
         location.reload();
     } catch (err) {
         alert("Gagal: " + err);
-        btn.innerText = "Submit Data";
-        btn.disabled = false;
     }
 }
 
