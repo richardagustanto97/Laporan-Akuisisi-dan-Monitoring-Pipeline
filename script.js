@@ -96,42 +96,65 @@ async function submitFinalData() {
     const subKategori = document.getElementById('dynamic-input-area').getAttribute('data-selected-sub');
     const rows = document.querySelectorAll('.input-row');
     
-    // SESUAIKAN NAMA SHEET DI SINI (Harus sama persis dengan di Google Sheets)
+    // Tentukan sheet tujuan
     let destinationSheet = (currentMenu === 'monitoring') ? "Data Detail Penginputan" : "Data Detail Akuisisi";
     
+    // --- VALIDASI AWAL ---
+    let allValid = true;
+    let dataToSubmit = [];
+
+    for (let row of rows) {
+        const ketInput = row.querySelector('.dynamic-text-input');
+        const statusSelect = row.querySelector('.status-select'); 
+        
+        const ketValue = ketInput ? ketInput.value.trim() : "";
+        const statusValue = statusSelect ? statusSelect.value : "";
+
+        // Rule: Nama Keterangan tidak boleh kosong
+        if (ketValue === "") {
+            allValid = false;
+            break;
+        }
+
+        // Rule: Jika di menu Monitoring, Status wajib dipilih
+        if (currentMenu === 'monitoring' && statusValue === "") {
+            allValid = false;
+            break;
+        }
+
+        // Simpan data sementara jika valid
+        dataToSubmit.push({
+            targetSheet: destinationSheet,
+            tanggal: tanggal,
+            kodeCabang: kodeCabang,
+            kategori: kategori,
+            subKategori: subKategori,
+            jumlah: 1,
+            keterangan: ketValue,
+            status: statusValue
+        });
+    }
+
+    if (!allValid || dataToSubmit.length === 0) {
+        alert("Mohon lengkapi SEMUA kolom input dan status sebelum mengirim.");
+        return; // Berhenti di sini, tidak lanjut mengirim data
+    }
+    // --- AKHIR VALIDASI ---
+
     const btn = document.getElementById('submit-btn');
     btn.innerText = "Mengirim...";
     btn.disabled = true;
 
     try {
-        for (let row of rows) {
-            const ketInput = row.querySelector('.dynamic-text-input');
-            const statusSelect = row.querySelector('.status-select'); 
-            
-            const ketValue = ketInput ? ketInput.value.trim() : "";
-            // Status diambil secara mandiri
-            const statusValue = statusSelect ? statusSelect.value : "";
-            
-            if (ketValue !== "") {
-                const payload = {
-                    targetSheet: destinationSheet,
-                    tanggal: tanggal,
-                    kodeCabang: kodeCabang,
-                    kategori: kategori,
-                    subKategori: subKategori,
-                    jumlah: 1,
-                    keterangan: ketValue, // Nama PT saja
-                    status: statusValue    // Status akan masuk kolom F
-                };
-
-                await fetch(webAppUrl, {
-                    method: "POST",
-                    mode: "no-cors",
-                    body: JSON.stringify(payload)
-                });
-            }
+        // Kirim data yang sudah divalidasi
+        for (let payload of dataToSubmit) {
+            await fetch(webAppUrl, {
+                method: "POST",
+                mode: "no-cors",
+                body: JSON.stringify(payload)
+            });
         }
-        alert(`Data berhasil disimpan!`);
+        alert(`Berhasil! Semua data telah tersimpan di ${destinationSheet}.`);
         location.reload();
     } catch (err) {
         alert("Gagal mengirim data: " + err);
