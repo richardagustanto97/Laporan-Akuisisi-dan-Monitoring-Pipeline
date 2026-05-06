@@ -7,7 +7,20 @@ const menuData = {
     akuisisi: { title: "Menu Akuisisi", categories: { "Akuisisi Payroll": ["New Mitra Payroll", "New CIF Rek Payroll New Mitra", "New Rek Payroll New Mitra", "New CIF Rek Payroll Eksisting Mitra", "New Rek Payroll Eksisting Mitra", "MTBI", "AXA"], "Akuisisi Prioritas": ["RTW", "NTB", "MDS", "MDCI", "RDPU", "MTBI", "AXA"], "Akuisisi Pebisnis": ["MTB", "Giro", "EDC", "LVM", "Kopra", "MTBI", "AXA"], "Akuisisi Individu": ["GMM", "Livin", "Simpel", "Tab Reguler", "Multicurrency", "MTR", "Tab Now non GMM", "MTBI", "AXA"], "Hasil Akuisisi All": ["EDC", "LVM", "Livin", "Kopra", "MDS", "MDCI", "RDPU", "AXA", "Payroll", "Tab Now", "MTB", "Giro", "Multicurrency", "Tab Reguler", "MTR", "Simpel", "MTBI"] } }
 };
 
-const placeholderMap = { "Pipeline PMP": "Nama PT / Jml Prospek", "Pipeline Badan Usaha": "Nama PT / Jml Prospek", "Diluar Pipeline": "Nama PT / Jml Prospek", "Pipeline RTW atau NTB": "Nama / Product offering", "Pipeline Data Leakage": "Nama / Product offering (LVM/EDC)", "Pipeline GMM": "Nama / Product offering (LVM/EDC)", "Leads Kopra": "Nama PT", "Pipeline nasabah dari Area": "Nama / Product offering (LVM/EDC/Kopra)", "Kawasan": "Nama / Product offering (LVM/EDC/Kopra)", "Non Pipeline dan Non Kawasan": "Nama / Product offering (LVM/EDC/Kopra)", "Pipeline Cakra": "Nama / Product offering", "Non pipeline": "Nama / Product offering", "New Mitra Payroll": "Nomor Mitra / Nama Mitra", "New CIF Rek Payroll New Mitra": "Nomor CIF", "New Rek Payroll New Mitra": "Nomor Rekening", "New CIF Rek Payroll Eksisting Mitra": "Nomor CIF", "New Rek Payroll Eksisting Mitra": "Nomor Rekening", "AXA": "Jumlah Case / FBI", "RTW": "Nomor CIF", "NTB": "Nomor CIF", "MDS": "Nominal", "MTB": "Nomor Rekening", "EDC": "Nama Aplikasi (Nasabah)", "Kopra": "Nama Perusahaan / Aplikasi" };
+const placeholderMap = { 
+    "Pipeline PMP": "Nama PT", 
+    "Pipeline Badan Usaha": "Nama PT", 
+    "Diluar Pipeline": "Nama PT", 
+    "New CIF Rek Payroll New Mitra": "Nomor CIF",
+    "New Rek Payroll New Mitra": "Nomor Rekening",
+    "New CIF Rek Payroll Eksisting Mitra": "Nomor CIF",
+    "New Rek Payroll Eksisting Mitra": "Nomor Rekening",
+    "AXA": "Jumlah Case / FBI",
+    "RTW": "Nomor CIF", 
+    "NTB": "Nomor CIF", 
+    "MDS": "Nominal", 
+    "Kopra": "Nama Perusahaan"
+};
 
 let currentMenu = ""; 
 
@@ -80,7 +93,15 @@ function generateTextInputs() {
             const row = document.createElement('div');
             row.className = "input-row";
             if (currentMenu === 'monitoring') {
-                row.innerHTML = `<input type="text" placeholder="${i}. ${placeholderText}" class="dynamic-text-input"><select class="status-select" onchange="updateColor(this)"><option value="" disabled selected>Status</option><option value="Berminat">Berminat</option><option value="Follow up">Follow up</option><option value="Tidak berminat">Tidak berminat</option></select>`;
+                row.innerHTML = `
+                    <input type="text" placeholder="${i}. ${placeholderText}" class="dynamic-text-input">
+                    <input type="number" placeholder="Jml" class="number-input-small">
+                    <select class="status-select" onchange="updateColor(this)">
+                        <option value="" disabled selected>Status</option>
+                        <option value="Berminat">Berminat</option>
+                        <option value="Follow up">Follow up</option>
+                        <option value="Tidak berminat">Tidak berminat</option>
+                    </select>`;
             } else {
                 row.innerHTML = `<input type="text" placeholder="${i}. ${placeholderText}" class="dynamic-text-input" style="flex: 1;">`;
             }
@@ -95,69 +116,49 @@ async function submitFinalData() {
     const kategori = document.getElementById('dynamic-input-area').getAttribute('data-selected-cat');
     const subKategori = document.getElementById('dynamic-input-area').getAttribute('data-selected-sub');
     const rows = document.querySelectorAll('.input-row');
-    
-    // Tentukan sheet tujuan
     let destinationSheet = (currentMenu === 'monitoring') ? "Data Detail Penginputan" : "Data Detail Akuisisi";
     
-    // --- VALIDASI AWAL ---
     let allValid = true;
     let dataToSubmit = [];
 
     for (let row of rows) {
-        const ketInput = row.querySelector('.dynamic-text-input');
-        const statusSelect = row.querySelector('.status-select'); 
-        
-        const ketValue = ketInput ? ketInput.value.trim() : "";
+        const ketValue = row.querySelector('.dynamic-text-input').value.trim();
+        const numInput = row.querySelector('.number-input-small');
+        const numValue = numInput ? numInput.value : 1;
+        const statusSelect = row.querySelector('.status-select');
         const statusValue = statusSelect ? statusSelect.value : "";
 
-        // Rule: Nama Keterangan tidak boleh kosong
-        if (ketValue === "") {
+        if (ketValue === "" || (currentMenu === 'monitoring' && (statusValue === "" || numValue === ""))) {
             allValid = false;
             break;
         }
 
-        // Rule: Jika di menu Monitoring, Status wajib dipilih
-        if (currentMenu === 'monitoring' && statusValue === "") {
-            allValid = false;
-            break;
-        }
-
-        // Simpan data sementara jika valid
         dataToSubmit.push({
             targetSheet: destinationSheet,
-            tanggal: tanggal,
-            kodeCabang: kodeCabang,
-            kategori: kategori,
-            subKategori: subKategori,
-            jumlah: 1,
+            tanggal, kodeCabang, kategori, subKategori,
+            jumlah: numValue,
             keterangan: ketValue,
             status: statusValue
         });
     }
 
     if (!allValid || dataToSubmit.length === 0) {
-        alert("Mohon lengkapi SEMUA kolom input dan status sebelum mengirim.");
-        return; // Berhenti di sini, tidak lanjut mengirim data
+        alert("Mohon lengkapi SEMUA kolom input, jumlah, dan status.");
+        return;
     }
-    // --- AKHIR VALIDASI ---
 
     const btn = document.getElementById('submit-btn');
     btn.innerText = "Mengirim...";
     btn.disabled = true;
 
     try {
-        // Kirim data yang sudah divalidasi
         for (let payload of dataToSubmit) {
-            await fetch(webAppUrl, {
-                method: "POST",
-                mode: "no-cors",
-                body: JSON.stringify(payload)
-            });
+            await fetch(webAppUrl, { method: "POST", mode: "no-cors", body: JSON.stringify(payload) });
         }
-        alert(`Berhasil! Semua data telah tersimpan di ${destinationSheet}.`);
+        alert(`Berhasil disimpan!`);
         location.reload();
     } catch (err) {
-        alert("Gagal mengirim data: " + err);
+        alert("Gagal: " + err);
         btn.innerText = "Submit Data";
         btn.disabled = false;
     }
