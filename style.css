@@ -1,58 +1,58 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Pelaporan Pipeline</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: #f0f2f5;
+    display: flex;
+    justify-content: center;
+    padding: 40px 20px;
+}
 
-    <div class="form-container">
-        <!-- HALAMAN 1: Validasi Kode Cabang -->
-        <section id="page1">
-            <h2>Data Monitoring & Akuisisi</h2>
-            <div class="input-group">
-                <label>Tanggal Pelaporan</label>
-                <input type="date" id="mon-date" required>
-            </div>
-            <div class="input-group">
-                <label>Kode Cabang</label>
-                <input type="text" id="branch-code" placeholder="Masukkan 5 digit kode">
-                <p id="error-msg" style="color: red; display: none; font-size: 14px; margin-top: 5px;">Kode Cabang tidak valid.</p>
-            </div>
-            <button class="main-btn" onclick="validateStep1()">Next</button>
-        </section>
+.form-container {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    width: 100%;
+    max-width: 480px;
+}
 
-        <!-- HALAMAN 2: Menu Utama -->
-        <section id="page-main-menu" style="display: none;">
-            <h2>Pilih Menu Utama</h2>
-            <button class="cat-btn" onclick="selectMainMenu('monitoring')">1. Monitoring</button>
-            <button class="cat-btn" onclick="selectMainMenu('akuisisi')">2. Akuisisi</button>
-            <button class="back-btn" onclick="goToPage('page1')">Kembali</button>
-        </section>
+h2 { color: #333; font-size: 20px; margin-bottom: 20px; text-align: center; }
 
-        <!-- HALAMAN 3: Pilih Kategori -->
-        <section id="page2" style="display: none;">
-            <h2 id="menu-title">Pilih Kategori</h2>
-            <div id="category-options"></div>
-            <button class="back-btn" onclick="goToPage('page-main-menu')">Kembali</button>
-        </section>
+/* Flexbox Baris Input */
+.input-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+}
 
-        <!-- HALAMAN 4: Sub Kategori & Input Data -->
-        <section id="page3" style="display: none;">
-            <h2 id="sub-title">Sub Kategori</h2>
-            <div id="sub-options"></div>
-            <div id="dynamic-input-area" style="display: none; margin-top: 20px; border-top: 1px solid #ddd; padding-top: 20px;">
-                <label id="question-label" style="font-weight: bold; margin-bottom: 10px; display: block;"></label>
-                <input type="number" id="follow-up-count" placeholder="Jumlah data" oninput="generateTextInputs()" style="margin-bottom: 15px;">
-                <div id="text-inputs-container"></div>
-                <button id="submit-btn" class="submit-btn" onclick="submitFinalData()">Submit Data</button>
-            </div>
-            <button class="back-btn" onclick="goBackToCategories()">Kembali ke Kategori</button>
-        </section>
-    </div>
+.dynamic-text-input { flex: 3; min-width: 0; }
+.number-input-small { flex: 1.5; min-width: 0; text-align: center; }
+.status-select { flex: 2; min-width: 0; font-size: 13px; }
 
-    <script src="script.js"></script>
-</body>
-</html>
+input, select, .cat-btn {
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-sizing: border-box;
+    font-size: 14px;
+}
+
+.cat-btn {
+    width: 100%;
+    background: white;
+    text-align: left;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.cat-btn:hover { background: #f8f9fa; border-color: #007bff; }
+
+.main-btn { width: 100%; background: #007bff; color: white; border: none; font-weight: bold; padding: 14px; border-radius: 8px; cursor: pointer; }
+.submit-btn { width: 100%; background: #28a745; color: white; border: none; font-weight: bold; margin-top: 15px; padding: 14px; border-radius: 8px; cursor: pointer; }
+.back-btn { width: 100%; background: none; color: #666; border: none; margin-top: 10px; cursor: pointer; text-decoration: underline; }
+
+.bg-berminat { background-color: #d4edda !important; }
+.bg-followup { background-color: #fff3cd !important; }
+.bg-tidak { background-color: #f8d7da !important; }
+
+.input-group { margin-bottom: 15px; }
+label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 5px; }

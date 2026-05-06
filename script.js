@@ -1,4 +1,4 @@
-const webAppUrl = "https://script.google.com/macros/s/AKfycbz0fPLSZOYAkN8RbKpzQCbiXMr7nNjRZ3oeNEf1lc7ED8HZytnuqLTJGXwvUbv6zvKm/exec";
+const webAppUrl = "https://script.google.com/macros/s/AKfycbxH-i_snYrKcRrmxPCciEAtn2YHUvd4iAtg3cspbNber6nRqkAu_Uf5iamnigB-Zm0P/exec";
 
 const validCodes = ["11900", "11902", "11903", "11904", "11906", "11907", "11912", "11916", "11920", "11923", "11924", "11929", "11931", "11932", "11934", "11935", "11936", "11937"];
 
@@ -19,7 +19,7 @@ const menuData = {
             "Akuisisi Prioritas": ["RTW", "NTB", "MDS", "MDCI", "RDPU", "MTBI", "AXA"], 
             "Akuisisi Pebisnis": ["MTB", "Giro", "EDC", "LVM", "Kopra", "MTBI", "AXA"], 
             "Akuisisi Individu": ["GMM", "Livin", "Simpel", "Tab Reguler", "Multicurrency", "MTR", "Tab Now non GMM", "MTBI", "AXA"],
-            "Hasil Akuisisi All": ["EDC", "LVM", "Livin", "Kopra", "MDS", "MDCI", "RDPU", "AXA", "Payroll", "Tab Now", "MTB", "Giro", "Multicurrency", "Tab Reguler", "MTR", "Simpel", "MTBI"] 
+    
         } 
     }
 };
@@ -28,8 +28,8 @@ const configMap = {
     "Pipeline PMP": { col1: "Nama PT", col2: "Jml Prospek", type2: "text" },
     "Pipeline Badan Usaha": { col1: "Nama PT", col2: "Jml Prospek", type2: "text" },
     "Diluar Pipeline": { col1: "Nama PT", col2: "Jml Prospek", type2: "text" },
-    "Pipeline RTW atau NTB": { col1: "Nama Nasabah", col2: "CIF", type2: "select", options: ["RTW", "NTB"] },
-    "Pipeline MDS/MDCI/RDPU": { col1: "Nama Nasabah", col2: "CIF", type2: "select", options: ["MDS", "MDCI", "RDPU"] },
+    "Pipeline RTW atau NTB": { col1: "Nama Nasabah", col2: "CIF", col3: "Product Offering", type3: "select", options: ["RTW", "NTB"] },
+    "Pipeline MDS/MDCI/RDPU": { col1: "Nama Nasabah", col2: "CIF", col3: "Product Offering", type3: "select", options: ["MDS", "MDCI", "RDPU"] },
     "Diluar Pipeline Prio": { col1: "Nama Nasabah", col2: "CIF", type2: "text" },
     "Pipeline Data Leakage": { col1: "Nama", col2: "CIF", col3: "Product Offering", type3: "select", options: ["LVM", "EDC"] },
     "Pipeline GMM": { col1: "Nama", col2: "CIF", col3: "Product Offering", type3: "select", options: ["LVM", "EDC"] },
@@ -44,11 +44,20 @@ const configMap = {
     "New CIF Rek Payroll New Mitra": { col1: "Nomor Rekening", hideCol2: true },
     "New Rek Payroll New Mitra": { col1: "Nomor Rekening", hideCol2: true },
     "MTBI": { col1: "Nomor Rekening", hideCol2: true },
-    "AXA": { col1: "Jumlah Case / FBI", hideCol2: true },
+    "AXA": { col1: "Nomor CIF", col2: "FBI", type2: "text" },
     "RTW": { col1: "Nomor CIF", hideCol2: true },
     "NTB": { col1: "Nomor CIF", hideCol2: true },
-    "MDS": { col1: "Nominal", hideCol2: true },
-    "Kopra": { col1: "Nama Perusahaan", hideCol2: true }
+    "MDS": { col1: "Nomor CIF", col2: "Nominal", type2: "text" },
+    "MDCI": { col1: "Nomor CIF", col2: "Nominal", type2: "text" },
+    "RDPU": { col1: "Nomor CIF", col2: "Nominal", type2: "text" },
+    "Kopra": { col1: "Nama Perusahaan", hideCol2: true },
+    "GMM": { col1: "Nomor Rekening", hideCol2: true },
+    "Livin": { col1: "Nomor Rekening", hideCol2: true },
+    "Simpel": { col1: "Nomor Rekening", hideCol2: true },
+    "Tab Reguler": { col1: "Nomor Rekening", hideCol2: true },
+    "Multicurrency": { col1: "Nomor Rekening", hideCol2: true },
+    "MTR": { col1: "Nomor Rekening", hideCol2: true },
+    "Tab Now non GMM": { col1: "Nomor Rekening", hideCol2: true },
 };
 
 let currentMenu = ""; 
@@ -149,31 +158,40 @@ async function submitFinalData() {
     const subKategori = document.getElementById('dynamic-input-area').getAttribute('data-selected-sub');
     const rows = document.querySelectorAll('.input-row');
     
-    // LOGIKA PEMISAHAN SHEET BERDASARKAN KATEGORI
     let destinationSheet = "";
-    if (kategori.includes("Payroll")) { destinationSheet = "Penginputan Pipeline Payroll"; }
-    else if (kategori.includes("Prioritas")) { destinationSheet = "Penginputan Pipeline Prioritas"; }
-    else if (kategori.includes("Pebisnis")) { destinationSheet = "Penginputan Pipeline Pebisnis"; }
-    else if (kategori.includes("Individu")) { destinationSheet = "Penginputan Pipeline Individu"; }
-    else { destinationSheet = "Data Detail Akuisisi"; }
+    if (currentMenu === 'monitoring') {
+        if (kategori.includes("Payroll")) { destinationSheet = "Penginputan Pipeline Payroll"; }
+        else if (kategori.includes("Prioritas")) { destinationSheet = "Penginputan Pipeline Prioritas"; }
+        else if (kategori.includes("Pebisnis")) { destinationSheet = "Penginputan Pipeline Pebisnis"; }
+        else if (kategori.includes("Individu")) { destinationSheet = "Penginputan Pipeline Individu"; }
+    } else if (currentMenu === 'akuisisi') {
+        if (kategori === "Akuisisi Payroll") { destinationSheet = "Akuisisi Payroll"; }
+        else if (kategori === "Akuisisi Prioritas") { destinationSheet = "Akuisisi Prio"; }
+        else if (kategori === "Akuisisi Pebisnis") { destinationSheet = "Akuisisi Pebisnis"; }
+        else if (kategori === "Akuisisi Individu") { destinationSheet = "Akuisisi Individu"; }
+        else { destinationSheet = "Data Detail Akuisisi"; }
+    }
     
     let dataToSubmit = [];
     for (let row of rows) {
-        const col1 = row.querySelector('.col-main').value.trim();
-        const col2 = row.querySelector('.col-2') ? row.querySelector('.col-2').value.trim() : "";
-        const col3 = row.querySelector('.col-3') ? row.querySelector('.col-3').value.trim() : "";
+        const val1 = row.querySelector('.col-main').value.trim();
+        const val2 = row.querySelector('.col-2') ? row.querySelector('.col-2').value.trim() : "";
+        const val3 = row.querySelector('.col-3') ? row.querySelector('.col-3').value.trim() : "";
         const statusVal = row.querySelector('.col-status') ? row.querySelector('.col-status').value : "Selesai";
 
-        if (col1 === "" || (currentMenu === 'monitoring' && statusVal === "")) { alert("Mohon lengkapi data."); return; }
-
-        let keteranganGabungan = col1;
-        if (col2 && col3) keteranganGabungan += ` | ${col2} | ${col3}`;
-        else if (col2) keteranganGabungan += ` | ${col2}`;
+        if (val1 === "" || (currentMenu === 'monitoring' && statusVal === "")) { alert("Mohon lengkapi data."); return; }
 
         dataToSubmit.push({
             targetSheet: destinationSheet,
-            tanggal, kodeCabang, kategori, subKategori,
-            jumlah: col2 || "1", keterangan: keteranganGabungan, status: statusVal
+            tanggal: tanggal,        
+            kodeCabang: kodeCabang,  
+            kategori: kategori,      
+            subKategori: subKategori,
+            total: "1",              
+            namaNasabah: val1,       
+            cifNasabah: val2,        
+            produk: val3,            
+            status: statusVal        
         });
     }
 
