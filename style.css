@@ -1,84 +1,58 @@
-/* General Style */
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f4f7f9;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: #f0f2f5;
     display: flex;
     justify-content: center;
-    padding: 50px 20px;
-    margin: 0;
+    padding: 40px 20px;
 }
 
 .form-container {
     background: white;
-    padding: 30px;
+    padding: 25px;
     border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
     width: 100%;
-    max-width: 500px; /* Sedikit lebih lebar untuk mengakomodasi 3 kolom */
+    max-width: 480px;
 }
 
-section {
-    display: none;
-}
+h2 { color: #333; font-size: 20px; margin-bottom: 20px; text-align: center; }
 
-#page1 {
-    display: block;
-}
-
-/* Layout Baris Input Dinamis */
+/* Flexbox Baris Input */
 .input-row {
     display: flex;
-    gap: 8px; /* Jarak antar kolom */
+    gap: 8px;
     margin-bottom: 12px;
-    align-items: center;
 }
 
-/* Pengaturan Lebar Kolom agar Tidak Bertabrakan */
-.dynamic-text-input {
-    flex: 3; /* Kolom Nama PT paling lebar */
-    min-width: 0; 
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-}
+.dynamic-text-input { flex: 3; min-width: 0; }
+.number-input-small { flex: 1.5; min-width: 0; text-align: center; }
+.status-select { flex: 2; min-width: 0; font-size: 13px; }
 
-.number-input-small {
-    flex: 1; /* Kolom Angka ramping */
-    min-width: 60px;
-    padding: 10px 5px;
-    text-align: center;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-}
-
-.status-select {
-    flex: 2; /* Kolom Status sedang */
-    min-width: 0;
-    padding: 10px 5px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font-size: 13px;
-    cursor: pointer;
-}
-
-/* Warna Status */
-.bg-berminat { background-color: #90EE90 !important; color: black; }
-.bg-followup { background-color: #FFFFE0 !important; color: black; }
-.bg-tidak { background-color: #FFB6C1 !important; color: black; }
-
-/* Form Elements */
-.input-group { margin-bottom: 20px; }
-label { display: block; margin-bottom: 8px; font-weight: bold; }
-input[type="date"], input[type="text"], input[type="number"] {
-    width: 100%;
+input, select, .cat-btn {
     padding: 12px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
     box-sizing: border-box;
+    font-size: 14px;
 }
 
-button { width: 100%; padding: 14px; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; margin-top: 10px; }
-.main-btn { background-color: #0056b3; color: white; }
-.cat-btn { background-color: #ffffff; color: #333; border: 1px solid #ddd; text-align: left; margin-bottom: 10px; padding: 15px;}
-.submit-btn { background-color: #28a745; color: white; }
-.back-btn { background-color: #6c757d; color: white; font-size: 14px; }
+.cat-btn {
+    width: 100%;
+    background: white;
+    text-align: left;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.cat-btn:hover { background: #f8f9fa; border-color: #007bff; }
+
+.main-btn { width: 100%; background: #007bff; color: white; border: none; font-weight: bold; padding: 14px; border-radius: 8px; cursor: pointer; }
+.submit-btn { width: 100%; background: #28a745; color: white; border: none; font-weight: bold; margin-top: 15px; padding: 14px; border-radius: 8px; cursor: pointer; }
+.back-btn { width: 100%; background: none; color: #666; border: none; margin-top: 10px; cursor: pointer; text-decoration: underline; }
+
+.bg-berminat { background-color: #d4edda !important; }
+.bg-followup { background-color: #fff3cd !important; }
+.bg-tidak { background-color: #f8d7da !important; }
+
+.input-group { margin-bottom: 15px; }
+label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 5px; }
