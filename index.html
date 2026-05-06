@@ -21,7 +21,7 @@
                 <input type="text" id="branch-code" placeholder="Masukkan 5 digit kode">
                 <p id="error-msg" style="color: red; display: none; font-size: 14px; margin-top: 5px;">Kode Cabang tidak valid.</p>
             </div>
-            <button onclick="validateStep1()">Next</button>
+            <button class="main-btn" onclick="validateStep1()">Next</button>
         </section>
 
         <!-- HALAMAN 1.5: Pilih Menu Utama -->
@@ -32,9 +32,34 @@
             <button class="back-btn" onclick="goToPage('page1')">Kembali</button>
         </section>
 
-        <!-- HALAMAN 2: Pilihan Kategori (Dinamis) -->
+        <!-- HALAMAN 2: Pilihan Kategori -->
         <section id="page2" style="display: none;">
             <h2 id="menu-title">Pilih Kategori</h2>
+            <div id="category-options"></div>
+            <button class="back-btn" onclick="goToPage('page-main-menu')">Kembali</button>
+        </section>
+
+        <!-- HALAMAN 3: Sub Kategori & Detail Input -->
+        <section id="page3" style="display: none;">
+            <h2 id="sub-title">Sub Kategori</h2>
+            <div id="sub-options"></div>
+
+            <div id="dynamic-input-area" style="display: none; margin-top: 20px; border-top: 1px solid #ddd; padding-top: 20px;">
+                <label id="question-label" style="font-weight: bold; margin-bottom: 10px; display: block;"></label>
+                <input type="number" id="follow-up-count" placeholder="Jumlah data" oninput="generateTextInputs()" style="margin-bottom: 15px;">
+                
+                <div id="text-inputs-container"></div>
+                
+                <button id="submit-btn" class="submit-btn" onclick="submitFinalData()">Submit Data</button>
+            </div>
+
+            <button class="back-btn" onclick="goBackToCategories()" style="margin-top: 10px;">Kembali ke Kategori</button>
+        </section>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>            <h2 id="menu-title">Pilih Kategori</h2>
             <div id="category-options"></div>
             <button class="back-btn" onclick="goToPage('page-main-menu')">Kembali</button>
         </section>
