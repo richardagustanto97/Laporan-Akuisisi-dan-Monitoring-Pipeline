@@ -1,3 +1,4 @@
+/* General Style */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: #f4f7f9;
@@ -13,35 +14,71 @@ body {
     border-radius: 12px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     width: 100%;
-    max-width: 450px; /* Ukuran ideal form agar tidak meluas */
+    max-width: 500px; /* Sedikit lebih lebar untuk mengakomodasi 3 kolom */
 }
 
-/* Memastikan section benar-benar bersembunyi */
 section {
     display: none;
 }
 
-/* Memastikan section pertama tampil di awal */
 #page1 {
     display: block;
 }
 
+/* Layout Baris Input Dinamis */
+.input-row {
+    display: flex;
+    gap: 8px; /* Jarak antar kolom */
+    margin-bottom: 12px;
+    align-items: center;
+}
+
+/* Pengaturan Lebar Kolom agar Tidak Bertabrakan */
+.dynamic-text-input {
+    flex: 3; /* Kolom Nama PT paling lebar */
+    min-width: 0; 
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+
+.number-input-small {
+    flex: 1; /* Kolom Angka ramping */
+    min-width: 60px;
+    padding: 10px 5px;
+    text-align: center;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+
+.status-select {
+    flex: 2; /* Kolom Status sedang */
+    min-width: 0;
+    padding: 10px 5px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+/* Warna Status */
+.bg-berminat { background-color: #90EE90 !important; color: black; }
+.bg-followup { background-color: #FFFFE0 !important; color: black; }
+.bg-tidak { background-color: #FFB6C1 !important; color: black; }
+
+/* Form Elements */
 .input-group { margin-bottom: 20px; }
 label { display: block; margin-bottom: 8px; font-weight: bold; }
-input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+input[type="date"], input[type="text"], input[type="number"] {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-sizing: border-box;
+}
 
 button { width: 100%; padding: 14px; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; margin-top: 10px; }
 .main-btn { background-color: #0056b3; color: white; }
-.cat-btn { background-color: #ffffff; color: #333; border: 1px solid #ddd; text-align: left; margin-bottom: 10px;}
+.cat-btn { background-color: #ffffff; color: #333; border: 1px solid #ddd; text-align: left; margin-bottom: 10px; padding: 15px;}
 .submit-btn { background-color: #28a745; color: white; }
 .back-btn { background-color: #6c757d; color: white; font-size: 14px; }
-
-/* Baris Input Dinamis Monitoring */
-.input-row { display: flex; gap: 8px; margin-bottom: 10px; }
-.status-select { flex: 1; font-size: 12px; font-weight: bold; }
-.dynamic-text-input { flex: 2; }
-
-/* Indikator Warna Picklist */
-.bg-berminat { background-color: #90EE90 !important; }
-.bg-followup { background-color: #FFFFE0 !important; }
-.bg-tidak { background-color: #FFB6C1 !important; }
