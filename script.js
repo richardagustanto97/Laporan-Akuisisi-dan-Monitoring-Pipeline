@@ -116,7 +116,7 @@ async function submitFinalData() {
     const kategori = document.getElementById('dynamic-input-area').getAttribute('data-selected-cat');
     const subKategori = document.getElementById('dynamic-input-area').getAttribute('data-selected-sub');
     const rows = document.querySelectorAll('.input-row');
-    let destinationSheet = (currentMenu === 'monitoring') ? "Data Detail Penginputan" : "Data Detail Akuisisi";
+    let destinationSheet = (currentMenu === 'monitoring') ? "Penginputan Pipeline Payroll" : "Data Detail Akuisisi";
     
     let allValid = true;
     let dataToSubmit = [];
