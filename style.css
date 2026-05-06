@@ -13,122 +13,35 @@ body {
     border-radius: 12px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     width: 100%;
-    max-width: 450px;
-    box-sizing: border-box;
+    max-width: 450px; /* Ukuran ideal form agar tidak meluas */
 }
 
+/* Memastikan section benar-benar bersembunyi */
 section {
-    display: none; /* Sembunyikan semua secara default */
-    width: 100%;
+    display: none;
+}
+
+/* Memastikan section pertama tampil di awal */
+#page1 {
+    display: block;
 }
 
 .input-group { margin-bottom: 20px; }
-
 label { display: block; margin-bottom: 8px; font-weight: bold; }
+input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
 
-input, select {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    box-sizing: border-box;
-}
-
-button {
-    width: 100%;
-    padding: 14px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: bold;
-    margin-top: 10px;
-}
-
+button { width: 100%; padding: 14px; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; margin-top: 10px; }
 .main-btn { background-color: #0056b3; color: white; }
-
-.cat-btn {
-    background-color: #ffffff;
-    color: #333;
-    border: 1px solid #ddd;
-    text-align: left;
-}
-
-.cat-btn:hover { background-color: #f0f7ff; border-color: #0056b3; }
-
+.cat-btn { background-color: #ffffff; color: #333; border: 1px solid #ddd; text-align: left; margin-bottom: 10px;}
 .submit-btn { background-color: #28a745; color: white; }
-
 .back-btn { background-color: #6c757d; color: white; font-size: 14px; }
 
-/* Baris Input Dinamis (Monitoring) */
-.input-row {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 10px;
-}
-
-.status-select {
-    flex: 1;
-    font-size: 12px;
-}
-
+/* Baris Input Dinamis Monitoring */
+.input-row { display: flex; gap: 8px; margin-bottom: 10px; }
+.status-select { flex: 1; font-size: 12px; font-weight: bold; }
 .dynamic-text-input { flex: 2; }
 
-/* Warna Picklist */
+/* Indikator Warna Picklist */
 .bg-berminat { background-color: #90EE90 !important; }
 .bg-followup { background-color: #FFFFE0 !important; }
-.bg-tidak { background-color: #FFB6C1 !important; }    width: 100%;
-    padding: 15px;
-    background-color: #0056b3;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: 0.3s;
-}
-
-button:hover { opacity: 0.9; }
-
-.cat-btn {
-    background-color: #ffffff;
-    color: #333;
-    border: 1px solid #ddd;
-    margin-bottom: 10px;
-    text-align: left;
-    padding: 15px;
-}
-
-.cat-btn:hover {
-    background-color: #f0f7ff;
-    border-color: #0056b3;
-}
-
-.back-btn {
-    background-color: #6c757d;
-    margin-top: 20px;
-}
-
-/* Styling untuk Baris Input Dinamis */
-.input-row {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 10px;
-    align-items: center;
-}
-
-.dynamic-text-input {
-    flex: 2; /* Kolom teks lebih lebar */
-}
-
-.status-select {
-    flex: 1; /* Kolom picklist lebih kecil */
-    cursor: pointer;
-    font-size: 12px;
-    font-weight: bold;
-}
-
-/* Warna Picklist */
-.bg-berminat { background-color: #90EE90 !important; color: black; } /* Hijau Terang */
-.bg-followup { background-color: #FFFFE0 !important; color: black; } /* Kuning Terang */
-.bg-tidak { background-color: #FFB6C1 !important; color: black; }    /* Merah Terang */
+.bg-tidak { background-color: #FFB6C1 !important; }
