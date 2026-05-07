@@ -140,39 +140,47 @@ function generateTextInputs() {
     if (count > 0) {
         for (let i = 1; i <= count; i++) {
             const row = document.createElement('div'); 
-            row.className = "input-row";
-            row.style.display = "flex";
-            row.style.gap = "20px";
-            row.style.marginBottom = "20px";
+            row.className = "input-row"; // Class ini akan diatur di CSS dengan display: flex
+            row.style.marginBottom = "15px";
 
             let html = "";
 
+            // KOLOM 1: Nama Nasabah / PT
             if (config.hideCol1) {
-                // Gunakan placeholder agar Apps Script tidak bingung, tapi input ini disembunyikan
                 html += `<input type="hidden" class="dynamic-text-input col-main" value="">`;
             } else {
-                html += `<input type="text" placeholder="${i}. ${config.col1}" class="dynamic-text-input col-main" style="flex:2.5;">`;
+                // Memberikan style flex: 3 langsung agar kolom tulisan lebih lebar
+                html += `<input type="text" placeholder="${i}. ${config.col1}" class="dynamic-text-input col-main" style="flex: 3; min-width: 0; padding: 10px;">`;
             }
 
+            // KOLOM 2: CIF / Nama Merchant / Rekening
             if (!config.hideCol2) {
                 if (config.type2 === "select") {
-                    html += `<select class="number-input-small col-2" style="flex:1.5;"><option value="" disabled selected>${config.col2}</option>${config.options.map(opt => `<option value="${opt}">${opt}</option>`).join('')}</select>`;
+                    html += `<select class="number-input-small col-2" style="flex: 2; min-width: 0; padding: 10px;">
+                                <option value="" disabled selected>${config.col2}</option>
+                                ${config.options.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
+                             </select>`;
                 } else { 
-                    html += `<input type="text" placeholder="${config.col2}" class="number-input-small col-2" style="flex:1.5;">`; 
+                    html += `<input type="text" placeholder="${config.col2}" class="number-input-small col-2" style="flex: 2; min-width: 0; padding: 10px;">`; 
                 }
             }
 
+            // KOLOM 3: Product Offering (Jika ada)
             if (config.col3 && !config.hideCol3) {
                 if (config.type3 === "select") {
-                    html += `<select class="number-input-small col-3" style="flex:1.5;"><option value="" disabled selected>${config.col3}</option>${config.options.map(opt => `<option value="${opt}">${opt}</option>`).join('')}</select>`;
+                    html += `<select class="number-input-small col-3" style="flex: 2; min-width: 0; padding: 10px;">
+                                <option value="" disabled selected>${config.col3}</option>
+                                ${config.options.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
+                             </select>`;
                 } else { 
-                    html += `<input type="text" placeholder="${config.col3}" class="number-input-small col-3" style="flex:1.5;">`; 
+                    html += `<input type="text" placeholder="${config.col3}" class="number-input-small col-3" style="flex: 2; min-width: 0; padding: 10px;">`; 
                 }
             }
 
+            // KOLOM STATUS (Hanya muncul di Menu Monitoring)
             if (currentMenu === 'monitoring') {
                 html += `
-                <select class="status-select col-status" onchange="updateColor(this)" style="flex:1.5;">
+                <select class="status-select col-status" onchange="updateColor(this)" style="flex: 2; min-width: 0; padding: 10px;">
                     <option value="" disabled selected>Status</option>
                     <option value="Berminat">Berminat</option>
                     <option value="Tidak berminat">Tidak berminat</option>
@@ -185,7 +193,6 @@ function generateTextInputs() {
         }
     }
 }
-
 async function submitFinalData() {
     const tanggal = document.getElementById('mon-date').value;
     const kodeCabang = document.getElementById('branch-code').value;

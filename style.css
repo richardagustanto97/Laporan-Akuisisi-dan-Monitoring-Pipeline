@@ -28,3 +28,36 @@ input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; 
 .bg-berminat { background-color: #d4edda !important; }
 .bg-followup { background-color: #fff3cd !important; }
 .bg-tidak { background-color: #f8d7da !important; }
+/* --- Tambahkan kode ini di bagian bawah style.css Anda --- */
+
+/* Penyesuaian agar Input Teks lebih lebar daripada Picklist (Dropdown) */
+.dynamic-text-input {
+    flex: 3 !important; /* Memberikan porsi lebih besar (3 bagian) */
+    min-width: 0;
+    padding: 10px 8px;
+    font-size: 13px;
+}
+
+.number-input-small, 
+.status-select {
+    flex: 2 !important; /* Memberikan porsi lebih kecil (2 bagian) */
+    min-width: 0;
+    padding: 10px 4px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+/* Memastikan baris input rapi saat dibuka di HP */
+.input-row {
+    display: flex;
+    gap: 8px; /* Jarak antar kolom */
+    margin-bottom: 12px;
+    width: 100%;
+    align-items: center;
+}
+
+/* Responsif untuk layar sangat kecil */
+@media (max-width: 380px) {
+    .dynamic-text-input { flex: 3.5 !important; }
+    .status-select { flex: 1.8 !important; font-size: 11px; }
+}
