@@ -3,7 +3,7 @@ const webAppUrl = "https://script.google.com/macros/s/AKfycbxH-i_snYrKcRrmxPCciE
 const validCodes = ["11900", "11902", "11903", "11904", "11906", "11907", "11912", "11916", "11920", "11923", "11924", "11929", "11931", "11932", "11934", "11935", "11936", "11937"];
 
 const menuData = {
-    monitoring: { 
+    aktivitas: { 
         title: "Menu Aktivitas", 
         categories: { 
             "Payroll": ["Pipeline PMP", "Pipeline Badan Usaha", "Diluar Pipeline"], 
@@ -175,8 +175,8 @@ function generateTextInputs() {
                 }
             }
 
-            // KOLOM STATUS (Hanya muncul di Menu Monitoring)
-            if (currentMenu === 'monitoring') {
+            // KOLOM STATUS (Hanya muncul di Menu aktivitas)
+            if (currentMenu === 'aktivitas') {
                 html += `
                 <select class="status-select col-status" onchange="updateColor(this)" style="flex: 2; min-width: 0; padding: 10px;">
                     <option value="" disabled selected>Status</option>
@@ -206,7 +206,7 @@ async function submitFinalData() {
 
     let destinationSheet = "";
     // ... (logika penentuan destinationSheet tetap sama)
-    if (currentMenu === 'monitoring') {
+    if (currentMenu === 'aktivitas') {
         if (kategori.includes("Payroll")) destinationSheet = "Penginputan Pipeline Payroll";
         else if (kategori.includes("Prioritas")) destinationSheet = "Penginputan Pipeline Prioritas";
         else if (kategori.includes("Pebisnis")) destinationSheet = "Penginputan Pipeline Pebisnis";
@@ -254,8 +254,8 @@ async function submitFinalData() {
             return;
         }
 
-        // Cek Status (Khusus Menu Monitoring)
-        if (currentMenu === 'monitoring' && !statusVal) {
+        // Cek Status (Khusus Menu aktivitas)
+        if (currentMenu === 'aktivitas' && !statusVal) {
             alert(`Baris ${rowNum}: Status harus dipilih.`);
             return;
         }
