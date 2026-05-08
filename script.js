@@ -15,7 +15,7 @@ const menuData = {
     akuisisi: { 
         title: "Menu Akuisisi", 
         categories: { 
-            "Akuisisi Payroll": ["New Mitra Payroll", "New CIF Rek Payroll New Mitra", "New Rek Payroll New Mitra", "New CIF Rek Payroll Eksisting Mitra", "New Rek Payroll Eksisting Mitra"], 
+            "Akuisisi Payroll": ["New Mitra Payroll", "New Rek Payroll New Mitra",  "New Rek Payroll Eksisting Mitra"], 
             "Akuisisi Prioritas": ["RTW", "NTB", "MDS", "MDCI", "RDPU"], 
             "Akuisisi Pebisnis": ["MTB", "Giro", "EDC", "LVM", "Kopra"], 
             "Akuisisi Individu": ["GMM", "Livin", "Simpel", "Tab Reguler", "Multicurrency", "MTR", "Tab Now non GMM"],
@@ -41,10 +41,8 @@ const configMap = {
     "Kawasan": { col1: "Nama", col2: "CIF", type2: "text", col3: "Product Offering"},
     "Non pipeline": { col1: "Nama", col2: "CIF", type2: "text", col3: "Product Offering"},
     "New Mitra Payroll": { col1: "Nomor Mitra", col2: "Nama Mitra", type2: "text" },
-    "New CIF Rek Payroll New Mitra": { col1: "Nomor Mitra", col2: "Nomor Rekening", type2: "text"},
-    "New Rek Payroll New Mitra": { col1: "Nomor Mitra", col2: "Nomor Rekening", type2: "text"},
-    "New CIF Rek Payroll Eksisting Mitra": { col1: "Nomor Mitra", col2: "Nomor Rekening", type2: "text"},
-    "New Rek Payroll Eksisting Mitra" : { col1: "Nomor Mitra", col2: "Nomor Rekening", type2: "text"},
+    "New Rek Payroll New Mitra": { col1: "Nomor Mitra", col2: "Nomor Rekening", type2: "text",col3: "New CIF?", type3: "select", options: ["New CIF","No"]},
+    "New Rek Payroll Eksisting Mitra" : { col1: "Nomor Mitra", col2: "Nomor Rekening", type2: "text",col3: "New CIF?", type3: "select", options: ["New CIF","No"]},
     "MTBI": { col1: "Nomor Rekening", col2: "Jenis Nasabah", type2: "select", options: ["Individu", "Badan Usaha","Payroll","Prioritas"] },
     "AXA": { col1: "Nomor CIF", col2: "Jenis Nasabah", type2: "select", options: ["Individu", "Badan Usaha","Payroll","Prioritas"],col3: "FBI", type3: "text" },
     "RTW": { col1: "Nomor CIF", hideCol2: true },
