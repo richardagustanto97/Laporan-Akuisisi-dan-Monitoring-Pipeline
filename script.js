@@ -52,7 +52,7 @@ const configMap = {
     "RDPU": { col1: "Nomor CIF", col2: "Nominal", type2: "text" },
     "Kopra": { col1: "Nomor CIF", hideCol2: true },
     "GMM": { col1: "Nomor Rekening", col2: "New CIF?", type2: "select", options: ["New CIF","No"] },
-    "Livin": { hideCol1: true },
+    "Livin": { hideCol1: true, hideCol2: true },
     "Simpel": { col1: "Nomor Rekening", col2: "New CIF?", type2: "select", options: ["New CIF","No"] },
     "Tab Reguler": { col1: "Nomor Rekening", col2: "New CIF?", type2: "select", options: ["New CIF","No"] },
     "Multicurrency": { col1: "Nomor Rekening", hideCol2: true },
