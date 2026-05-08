@@ -8,7 +8,7 @@ const menuData = {
         categories: { 
             "Payroll": ["Pipeline PMP", "Pipeline Badan Usaha", "Diluar Pipeline"], 
             "Prioritas": ["Pipeline RTW atau NTB", "Diluar Pipeline Prio", "Pipeline MDS/MDCI/RDPU"], 
-            "Pebisnis": ["Pipeline Data Leakage", "Pipeline GMM", "Leads Kopra", "Pipeline nasabah dari Area", "Kawasan Pebisnis", "Non Pipeline dan Non Kawasan"], 
+            "Pebisnis": ["Pipeline Data Leakage", "Pipeline GMM Merchant", "Leads Kopra", "Pipeline nasabah dari Area", "Kawasan Pebisnis", "Non Pipeline dan Non Kawasan"], 
             "Individu": ["Pipeline Cakra", "Kawasan", "Non pipeline"] 
         } 
     },
@@ -32,7 +32,7 @@ const configMap = {
     "Pipeline MDS/MDCI/RDPU": { col1: "Nama Nasabah", col2: "CIF", col3: "Product Offering", type3: "select", options: ["MDS", "MDCI", "RDPU"] },
     "Diluar Pipeline Prio": { col1: "Nama Nasabah", col2: "CIF", type2: "text" },
     "Pipeline Data Leakage": { col1: "Nama", col2: "CIF", col3: "Product Offering", type3: "select", options: ["LVM", "EDC"] },
-    "Pipeline GMM": { col1: "Nama", col2: "Ticket-ID", col3: "Product Offering", type3: "select", options: ["LVM", "EDC"] },
+    "Pipeline GMM Merchant": { col1: "Nama", col2: "Ticket-ID", col3: "Product Offering", type3: "select", options: ["LVM", "EDC"] },
     "Leads Kopra": { col1: "Nama PT", col2: "CIF", hideCol3: true },
     "Pipeline nasabah dari Area": { col1: "Nama", col2: "CIF", col3: "Product Offering", type3: "select", options: ["LVM", "EDC", "Kopra"] },
     "Kawasan Pebisnis": { col1: "Nama", col2: "CIF", col3: "Product Offering", type3: "select", options: ["LVM", "EDC", "Kopra"] },
