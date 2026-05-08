@@ -58,8 +58,8 @@ const configMap = {
     "Multicurrency": { col1: "Nomor Rekening", hideCol2: true },
     "MTR": { col1: "Nomor Rekening", hideCol2: true },
     "Tab Now non GMM": { col1: "Nomor Rekening", hideCol2: true },
-    "MTB": { col1: "Nomor Rekening", col2: "New CIF?", type2: "select", options: ["New CIF","No"]},
-    "Giro": { col1: "Nomor Rekening", col2: "New CIF?", type2: "select", options: ["New CIF","No"]},
+    "MTB": { col1: "Nomor Rekening", hideCol2: true, col3: "New CIF?", type3: "select", options: ["New CIF","No"]},
+    "Giro": { col1: "Nomor Rekening", hideCol2: true, col3: "New CIF?", type3: "select", options: ["New CIF","No"]},
     "EDC": { hideCol1: true, col2: "Nama Merchant", type2: "text" },
     "LVM": { hideCol1: true, col2: "Nama Merchant", type2: "text" }
 };
