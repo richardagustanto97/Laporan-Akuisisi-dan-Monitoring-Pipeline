@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Data Aktivitas & Akuisisi</title>
+    <title>Data Monitoring & Akuisisi</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -24,17 +24,17 @@
             <button onclick="validateStep1()" class="submit-btn">Next</button>
             
             <!-- Tombol Baru -->
-            <a href="https://docs.google.com/spreadsheets/d/18k4W2U653IU7YOkOPNlcmW_aFf7xyqagGq4MpkQMN3E/edit?gid=710108138#gid=710108138" 
-               target="_blank" class="secondary-btn">
-               Ingin melihat hasil input? Klik Disini
-            </a>
+             
+            <button onclick="checkPassword()" class="secondary-btn">
+                Ingin melihat hasil input? Klik Disini
+            </button>       
         </section>
-
+            
         <!-- PAGE 2: Main Menu -->
         <section id="page-main-menu" style="display:none;">
             <h2 id="main-title">Pilih Menu Utama</h2>
             <div class="menu-grid">
-                <button class="menu-btn" onclick="selectMainMenu('aktivitas')">Menu Aktivitas</button>
+                <button class="menu-btn" onclick="selectMainMenu('monitoring')">Menu Monitoring</button>
                 <button class="menu-btn" onclick="selectMainMenu('akuisisi')">Menu Akuisisi</button>
             </div>
         </section>

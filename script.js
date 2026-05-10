@@ -1,21 +1,21 @@
-const webAppUrl = "https://script.google.com/macros/s/AKfycby1wqgNZdWjF1h0-twOMYbJsIYPnvoL3DniUjtQou5cw15OCijKgLjjEwSkpW-v7Dy9/exec";
+const webAppUrl = "https://script.google.com/macros/s/AKfycbxH-i_snYrKcRrmxPCciEAtn2YHUvd4iAtg3cspbNber6nRqkAu_Uf5iamnigB-Zm0P/exec";
 
 const validCodes = ["11900", "11902", "11903", "11904", "11906", "11907", "11912", "11916", "11920", "11923", "11924", "11929", "11931", "11932", "11934", "11935", "11936", "11937"];
 
 const menuData = {
-    aktivitas: { 
-        title: "Menu Aktivitas", 
+    monitoring: { 
+        title: "Menu Monitoring", 
         categories: { 
             "Payroll": ["Pipeline PMP", "Pipeline Badan Usaha", "Diluar Pipeline"], 
             "Prioritas": ["Pipeline RTW atau NTB", "Diluar Pipeline Prio", "Pipeline MDS/MDCI/RDPU"], 
-            "Pebisnis": ["Pipeline Data Leakage", "Pipeline GMM Merchant", "Leads Kopra", "Pipeline nasabah dari Area", "Kawasan Pebisnis", "Non Pipeline dan Non Kawasan"], 
+            "Pebisnis": ["Pipeline Data Leakage", "Pipeline GMM", "Leads Kopra", "Pipeline nasabah dari Area", "Kawasan Pebisnis", "Non Pipeline dan Non Kawasan"], 
             "Individu": ["Pipeline Cakra", "Kawasan", "Non pipeline"] 
         } 
     },
     akuisisi: { 
         title: "Menu Akuisisi", 
         categories: { 
-            "Akuisisi Payroll": ["New Mitra Payroll", "New Rek Payroll New Mitra",  "New Rek Payroll Eksisting Mitra"], 
+            "Akuisisi Payroll": ["New Mitra Payroll", "New CIF Rek Payroll New Mitra", "New Rek Payroll New Mitra", "New CIF Rek Payroll Eksisting Mitra", "New Rek Payroll Eksisting Mitra"], 
             "Akuisisi Prioritas": ["RTW", "NTB", "MDS", "MDCI", "RDPU"], 
             "Akuisisi Pebisnis": ["MTB", "Giro", "EDC", "LVM", "Kopra"], 
             "Akuisisi Individu": ["GMM", "Livin", "Simpel", "Tab Reguler", "Multicurrency", "MTR", "Tab Now non GMM"],
@@ -32,7 +32,7 @@ const configMap = {
     "Pipeline MDS/MDCI/RDPU": { col1: "Nama Nasabah", col2: "CIF", col3: "Product Offering", type3: "select", options: ["MDS", "MDCI", "RDPU"] },
     "Diluar Pipeline Prio": { col1: "Nama Nasabah", col2: "CIF", type2: "text" },
     "Pipeline Data Leakage": { col1: "Nama", col2: "CIF", col3: "Product Offering", type3: "select", options: ["LVM", "EDC"] },
-    "Pipeline GMM Merchant": { col1: "Nama", col2: "Ticket-ID", col3: "Product Offering", type3: "select", options: ["LVM", "EDC"] },
+    "Pipeline GMM": { col1: "Nama", col2: "CIF", col3: "Product Offering", type3: "select", options: ["LVM", "EDC"] },
     "Leads Kopra": { col1: "Nama PT", col2: "CIF", hideCol3: true },
     "Pipeline nasabah dari Area": { col1: "Nama", col2: "CIF", col3: "Product Offering", type3: "select", options: ["LVM", "EDC", "Kopra"] },
     "Kawasan Pebisnis": { col1: "Nama", col2: "CIF", col3: "Product Offering", type3: "select", options: ["LVM", "EDC", "Kopra"] },
@@ -41,8 +41,10 @@ const configMap = {
     "Kawasan": { col1: "Nama", col2: "CIF", type2: "text", col3: "Product Offering"},
     "Non pipeline": { col1: "Nama", col2: "CIF", type2: "text", col3: "Product Offering"},
     "New Mitra Payroll": { col1: "Nomor Mitra", col2: "Nama Mitra", type2: "text" },
-    "New Rek Payroll New Mitra": { col1: "Nomor Mitra", col2: "Nomor Rekening", type2: "text",col3: "New CIF?", type3: "select", options: ["New CIF","No"]},
-    "New Rek Payroll Eksisting Mitra" : { col1: "Nomor Mitra", col2: "Nomor Rekening", type2: "text",col3: "New CIF?", type3: "select", options: ["New CIF","No"]},
+    "New CIF Rek Payroll New Mitra": { col1: "Nomor Mitra", col2: "Nomor Rekening", type2: "text"},
+    "New Rek Payroll New Mitra": { col1: "Nomor Mitra", col2: "Nomor Rekening", type2: "text"},
+    "New CIF Rek Payroll Eksisting Mitra": { col1: "Nomor Mitra", col2: "Nomor Rekening", type2: "text"},
+    "New Rek Payroll Eksisting Mitra" : { col1: "Nomor Mitra", col2: "Nomor Rekening", type2: "text"},
     "MTBI": { col1: "Nomor Rekening", col2: "Jenis Nasabah", type2: "select", options: ["Individu", "Badan Usaha","Payroll","Prioritas"] },
     "AXA": { col1: "Nomor CIF", col2: "Jenis Nasabah", type2: "select", options: ["Individu", "Badan Usaha","Payroll","Prioritas"],col3: "FBI", type3: "text" },
     "RTW": { col1: "Nomor CIF", hideCol2: true },
@@ -51,15 +53,15 @@ const configMap = {
     "MDCI": { col1: "Nomor CIF", col2: "Nominal", type2: "text" },
     "RDPU": { col1: "Nomor CIF", col2: "Nominal", type2: "text" },
     "Kopra": { col1: "Nomor CIF", hideCol2: true },
-    "GMM": { col1: "Nomor Rekening", col2: "New CIF?", type2: "select", options: ["New CIF","No"] },
-    "Livin": { hideCol1: true, hideCol2: true },
-    "Simpel": { col1: "Nomor Rekening", col2: "New CIF?", type2: "select", options: ["New CIF","No"] },
-    "Tab Reguler": { col1: "Nomor Rekening", col2: "New CIF?", type2: "select", options: ["New CIF","No"] },
+    "GMM": { col1: "Nomor Rekening", hideCol2: true },
+    "Livin": { col1: "Nomor Rekening", hideCol2: true },
+    "Simpel": { col1: "Nomor Rekening", hideCol2: true },
+    "Tab Reguler": { col1: "Nomor Rekening", hideCol2: true },
     "Multicurrency": { col1: "Nomor Rekening", hideCol2: true },
     "MTR": { col1: "Nomor Rekening", hideCol2: true },
     "Tab Now non GMM": { col1: "Nomor Rekening", hideCol2: true },
-    "MTB": { col1: "Nomor Rekening", hideCol2: true, col3: "New CIF?", type3: "select", options: ["New CIF","No"]},
-    "Giro": { col1: "Nomor Rekening", hideCol2: true, col3: "New CIF?", type3: "select", options: ["New CIF","No"]},
+    "MTB": { col1: "Nomor Rekening", hideCol2: true},
+    "Giro": { col1: "Nomor Rekening", hideCol2: true},
     "EDC": { hideCol1: true, col2: "Nama Merchant", type2: "text" },
     "LVM": { hideCol1: true, col2: "Nama Merchant", type2: "text" }
 };
@@ -175,8 +177,8 @@ function generateTextInputs() {
                 }
             }
 
-            // KOLOM STATUS (Hanya muncul di Menu aktivitas)
-            if (currentMenu === 'aktivitas') {
+            // KOLOM STATUS (Hanya muncul di Menu Monitoring)
+            if (currentMenu === 'monitoring') {
                 html += `
                 <select class="status-select col-status" onchange="updateColor(this)" style="flex: 2; min-width: 0; padding: 10px;">
                     <option value="" disabled selected>Status</option>
@@ -206,7 +208,7 @@ async function submitFinalData() {
 
     let destinationSheet = "";
     // ... (logika penentuan destinationSheet tetap sama)
-    if (currentMenu === 'aktivitas') {
+    if (currentMenu === 'monitoring') {
         if (kategori.includes("Payroll")) destinationSheet = "Penginputan Pipeline Payroll";
         else if (kategori.includes("Prioritas")) destinationSheet = "Penginputan Pipeline Prioritas";
         else if (kategori.includes("Pebisnis")) destinationSheet = "Penginputan Pipeline Pebisnis";
@@ -254,8 +256,8 @@ async function submitFinalData() {
             return;
         }
 
-        // Cek Status (Khusus Menu aktivitas)
-        if (currentMenu === 'aktivitas' && !statusVal) {
+        // Cek Status (Khusus Menu Monitoring)
+        if (currentMenu === 'monitoring' && !statusVal) {
             alert(`Baris ${rowNum}: Status harus dipilih.`);
             return;
         }
@@ -303,5 +305,21 @@ async function submitFinalData() {
         btn.innerText = "Submit Data"; btn.disabled = false;
     }
 }
+function checkPassword() {
+    // Memunculkan kotak input password
+    const password = prompt("Masukkan Password untuk melihat hasil:");
+    const correctPassword = "Gambir119";
+    const spreadsheetUrl = "https://docs.google.com/spreadsheets/d/18k4W2U653IU7YOkOPNlcmW_aFf7xyqagGq4MpkQMN3E/edit?gid=710108138#gid=710108138";
 
+    if (password === correctPassword) {
+        // Jika benar, buka link di tab baru
+        window.open(spreadsheetUrl, '_blank');
+    } else if (password === null) {
+        // Jika user klik 'Cancel', tidak muncul pesan error
+        return;
+    } else {
+        // Jika salah, muncul peringatan
+        alert("Password salah! Akses ditolak.");
+    }
+}
 function goBackToCategories() { goToPage('page2'); }
