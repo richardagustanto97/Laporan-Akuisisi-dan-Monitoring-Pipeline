@@ -2,7 +2,6 @@ const webAppUrl = "https://script.google.com/macros/s/AKfycby1wqgNZdWjF1h0-twOMY
 
 const validCodes = ["11900", "11902", "11903", "11904", "11906", "11907", "11912", "11916", "11920", "11923", "11924", "11929", "11931", "11932", "11934", "11935", "11936", "11937"];
 
-// PERBAIKAN: Menghapus kurung kurawal yang berlebih agar kode bisa jalan
 const menuData = {
     monitoring: { 
         title: "Menu Aktivitas", 
@@ -94,12 +93,10 @@ function selectMainMenu(menu) {
         alert("Konfigurasi untuk " + menu + " belum tersedia.");
         return;
     }
-    
     currentMenu = menu;
     const container = document.getElementById('category-options');
     document.getElementById('menu-title').innerText = menuData[menu].title;
     container.innerHTML = "";
-    
     Object.keys(menuData[menu].categories).forEach(cat => {
         const btn = document.createElement('button'); 
         btn.className = 'cat-btn';
@@ -143,23 +140,18 @@ function generateTextInputs() {
     const container = document.getElementById('text-inputs-container');
     const selectedSub = document.getElementById('dynamic-input-area').getAttribute('data-selected-sub');
     container.innerHTML = ""; 
-    
     const config = configMap[selectedSub] || { col1: "Nama", col2: "Keterangan", type2: "text" };
-    
     if (count > 0) {
         for (let i = 1; i <= count; i++) {
             const row = document.createElement('div'); 
             row.className = "input-row"; 
             row.style.marginBottom = "15px";
-
             let html = "";
-
             if (config.hideCol1) {
                 html += `<input type="hidden" class="dynamic-text-input col-main" value="">`;
             } else {
                 html += `<input type="text" placeholder="${i}. ${config.col1}" class="dynamic-text-input col-main" style="flex: 3; min-width: 0; padding: 10px;">`;
             }
-
             if (!config.hideCol2) {
                 if (config.type2 === "select") {
                     html += `<select class="number-input-small col-2" style="flex: 2; min-width: 0; padding: 10px;">
@@ -170,7 +162,6 @@ function generateTextInputs() {
                     html += `<input type="text" placeholder="${config.col2}" class="number-input-small col-2" style="flex: 2; min-width: 0; padding: 10px;">`; 
                 }
             }
-
             if (config.col3 && !config.hideCol3) {
                 if (config.type3 === "select") {
                     html += `<select class="number-input-small col-3" style="flex: 2; min-width: 0; padding: 10px;">
@@ -181,8 +172,6 @@ function generateTextInputs() {
                     html += `<input type="text" placeholder="${config.col3}" class="number-input-small col-3" style="flex: 2; min-width: 0; padding: 10px;">`; 
                 }
             }
-
-            // Perbaikan logika: status muncul jika di menu monitoring kategori tertentu atau aktivitas
             if (currentMenu === 'monitoring' || currentMenu === 'aktivitas') {
                 html += `
                 <select class="status-select col-status" onchange="updateColor(this)" style="flex: 2; min-width: 0; padding: 10px;">
@@ -192,7 +181,6 @@ function generateTextInputs() {
                     <option value="Follow up">Follow up</option>
                 </select>`;
             }
-            
             row.innerHTML = html; 
             container.appendChild(row);
         }
@@ -205,12 +193,7 @@ async function submitFinalData() {
     const kategori = document.getElementById('dynamic-input-area').getAttribute('data-selected-cat');
     const subKategori = document.getElementById('dynamic-input-area').getAttribute('data-selected-sub');
     const rows = document.querySelectorAll('.input-row');
-    
-    if (rows.length === 0) {
-        alert("Mohon masukkan jumlah data terlebih dahulu.");
-        return;
-    }
-
+    if (rows.length === 0) { alert("Mohon masukkan jumlah data terlebih dahulu."); return; }
     let destinationSheet = "";
     if (currentMenu === 'monitoring') {
         if (kategori.includes("Payroll")) destinationSheet = "Penginputan Pipeline Payroll";
@@ -226,19 +209,12 @@ async function submitFinalData() {
         else if (kategori === "Akuisisi MTBI & AXA") destinationSheet = "Akuisisi MTBI & AXA";
         else destinationSheet = "Data Detail Akuisisi";
     }
-    
-    if (destinationSheet === "") {
-        alert("Sheet tujuan tidak ditemukan.");
-        return;
-    }
-
+    if (destinationSheet === "") { alert("Sheet tujuan tidak ditemukan."); return; }
     let dataToSubmit = [];
     const config = configMap[subKategori] || {};
-
     for (let i = 0; i < rows.length; i++) {
         const row = rows[i];
         const rowNum = i + 1;
-
         const val1 = row.querySelector('.col-main').value.trim();
         const val2El = row.querySelector('.col-2');
         const val2 = val2El ? val2El.value.trim() : "";
@@ -246,72 +222,31 @@ async function submitFinalData() {
         const val3 = val3El ? val3El.value.trim() : "";
         const statusEl = row.querySelector('.col-status');
         const statusVal = statusEl ? statusEl.value : "Selesai";
-
-        // RULES VALIDASI: Hanya cek kolom yang TIDAK di-hide
-        if (!config.hideCol1 && val1 === "") {
-            alert(`Baris ${rowNum}: ${config.col1 || 'Kolom 1'} harus diisi.`);
-            return;
-        }
-        if (!config.hideCol2 && val2 === "") {
-            alert(`Baris ${rowNum}: ${config.col2 || 'Kolom 2'} harus diisi.`);
-            return;
-        }
-        // Khusus Col 3: Hanya wajib jika config.col3 ada dan TIDAK di-hide
-        if (config.col3 && !config.hideCol3 && val3 === "") {
-            alert(`Baris ${rowNum}: ${config.col3} harus diisi.`);
-            return;
-        }
-        // Validasi Status (Jika menu monitoring/aktivitas)
-        if ((currentMenu === 'monitoring' || currentMenu === 'aktivitas') && statusVal === "") {
-            alert(`Baris ${rowNum}: Status harus dipilih.`);
-            return;
-        }
-
-        dataToSubmit.push({
-            targetSheet: destinationSheet,
-            tanggal: tanggal,        
-            kodeCabang: kodeCabang,  
-            kategori: kategori,      
-            subKategori: subKategori,
-            total: "1",              
-            namaNasabah: val1,
-            cifNasabah: val2,
-            produk: val3,            
-            status: statusVal        
-        });
+        if (!config.hideCol1 && val1 === "") { alert(`Baris ${rowNum}: ${config.col1 || 'Kolom 1'} harus diisi.`); return; }
+        if (!config.hideCol2 && val2 === "") { alert(`Baris ${rowNum}: ${config.col2 || 'Kolom 2'} harus diisi.`); return; }
+        if (config.col3 && !config.hideCol3 && val3 === "") { alert(`Baris ${rowNum}: ${config.col3} harus diisi.`); return; }
+        if ((currentMenu === 'monitoring' || currentMenu === 'aktivitas') && statusVal === "") { alert(`Baris ${rowNum}: Status harus dipilih.`); return; }
+        dataToSubmit.push({ targetSheet: destinationSheet, tanggal: tanggal, kodeCabang: kodeCabang, kategori: kategori, subKategori: subKategori, total: "1", namaNasabah: val1, cifNasabah: val2, produk: val3, status: statusVal });
     }
-
     const btn = document.getElementById('submit-btn');
     btn.innerText = "Mengirim..."; btn.disabled = true;
-
     try {
-        const requests = dataToSubmit.map(payload => 
-            fetch(webAppUrl, {
-                method: "POST", mode: "no-cors",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
-            })
-        );
+        const requests = dataToSubmit.map(payload => fetch(webAppUrl, { method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }));
         await Promise.all(requests);
         alert(`Sukses! ${dataToSubmit.length} data dikirim ke: ${destinationSheet}`);
         location.reload();
-    } catch (err) {
-        alert("Kesalahan: " + err);
-        btn.innerText = "Submit Data"; btn.disabled = false;
-    }
+    } catch (err) { alert("Kesalahan: " + err); btn.innerText = "Submit Data"; btn.disabled = false; }
 }
-// Tambahkan fungsi ini di file script.js Anda
+
+function goBackToCategories() { goToPage('page2'); }
+
+// FUNGSI PERBAIKAN TOMBOL HASIL INPUT
 function checkPassword() {
     const password = prompt("Masukkan Password untuk akses database:");
-
-    // Password sesuai permintaan Anda
     if (password === "Gambir119") {
         const url = "https://docs.google.com/spreadsheets/d/18k4W2U653IU7YOkOPNlcmW_aFf7xyqagGq4MpkQMN3E/edit?gid=796948715#gid=796948715";
         window.open(url, "_blank");
     } else if (password !== null) {
-        // Jika user klik 'Cancel', password akan null. 
-        // Pesan salah hanya muncul jika user mengisi password tapi keliru.
         alert("Password Salah! Akses ditolak.");
     }
 }
-function goBackToCategories() { goToPage('page2'); }
