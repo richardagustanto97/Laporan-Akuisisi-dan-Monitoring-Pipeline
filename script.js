@@ -300,13 +300,18 @@ async function submitFinalData() {
         btn.innerText = "Submit Data"; btn.disabled = false;
     }
 }
-function viewData() {
-    const password = prompt("Masukkan password untuk melihat data:");
-    
+// Tambahkan fungsi ini di file script.js Anda
+function checkPassword() {
+    const password = prompt("Masukkan Password untuk akses database:");
+
+    // Password sesuai permintaan Anda
     if (password === "Gambir119") {
-        window.open("https://docs.google.com/spreadsheets/d/18k4W2U653IU7YOkOPNlcmW_aFf7xyqagGq4MpkQMN3E/edit?gid=796948715#gid=796948715", "_blank");
+        const url = "https://docs.google.com/spreadsheets/d/18k4W2U653IU7YOkOPNlcmW_aFf7xyqagGq4MpkQMN3E/edit?gid=796948715#gid=796948715";
+        window.open(url, "_blank");
     } else if (password !== null) {
-        alert("Password salah! Akses ditolak.");
+        // Jika user klik 'Cancel', password akan null. 
+        // Pesan salah hanya muncul jika user mengisi password tapi keliru.
+        alert("Password Salah! Akses ditolak.");
     }
 }
 function goBackToCategories() { goToPage('page2'); }
