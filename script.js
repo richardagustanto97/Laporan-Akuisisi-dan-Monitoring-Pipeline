@@ -87,35 +87,24 @@ function validateStep1() {
 }
 
 function selectMainMenu(menu) {
-    // 1. Validasi apakah menu ada di menuData
+    // Validasi: Cek apakah menu ada di menuData
     if (!menuData[menu]) {
-        console.error("Menu tidak ditemukan:", menu);
+        alert("Menu " + menu + " belum dikonfigurasi di menuData.");
         return;
     }
-
+    
     currentMenu = menu;
     const container = document.getElementById('category-options');
-    const menuTitle = document.getElementById('menu-title');
+    document.getElementById('menu-title').innerText = menuData[menu].title;
+    container.innerHTML = "";
     
-    // 2. Set judul menu secara aman
-    if (menuTitle) {
-        menuTitle.innerText = menuData[menu].title || "Menu";
-    }
-
-    // 3. Bersihkan kontainer sebelum mengisi ulang
-    container.innerHTML = ""; 
-
-    // 4. Render tombol kategori jika categories tersedia
-    if (menuData[menu].categories) {
-        Object.keys(menuData[menu].categories).forEach(cat => {
-            const btn = document.createElement('button'); 
-            btn.className = 'cat-btn';
-            btn.innerText = cat; 
-            btn.onclick = () => showSub(cat);
-            container.appendChild(btn);
-        });
-    }
-
+    Object.keys(menuData[menu].categories).forEach(cat => {
+        const btn = document.createElement('button'); 
+        btn.className = 'cat-btn';
+        btn.innerText = cat; 
+        btn.onclick = () => showSub(cat);
+        container.appendChild(btn);
+    });
     goToPage('page2');
 }
 
