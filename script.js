@@ -22,12 +22,7 @@ const menuData = {
             "Akuisisi MTBI & AXA": ["MTBI", "AXA"]
         } 
     },
-    // Menambahkan key monitoring agar fungsi selectMainMenu tidak error
-    monitoring: {
-        title: "Menu Monitoring",
-        categories: {
-            "Monitoring Data": ["Review Pipeline", "Log Aktivitas"]
-        }
+
     }
 };
 
