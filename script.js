@@ -5,7 +5,7 @@ const validCodes = ["11900", "11902", "11903", "11904", "11906", "11907", "11912
 // PERBAIKAN: Menghapus kurung kurawal yang berlebih agar kode bisa jalan
 const menuData = {
     monitoring: { 
-        title: "Menu Monitoring", 
+        title: "Menu Aktivitas", 
         categories: { 
             "Payroll": ["Pipeline PMP", "Pipeline Badan Usaha", "Diluar Pipeline"], 
             "Prioritas": ["Pipeline RTW atau NTB", "Diluar Pipeline Prio", "Pipeline MDS/MDCI/RDPU"], 
