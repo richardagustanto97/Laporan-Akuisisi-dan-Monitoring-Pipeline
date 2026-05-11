@@ -4,7 +4,7 @@ const validCodes = ["11900", "11902", "11903", "11904", "11906", "11907", "11912
 
 const menuData = {
     aktivitas: { 
-        title: "Menu Aktivitas", 
+        title: "Menu Monitoring", 
         categories: { 
             "Payroll": ["Pipeline PMP", "Pipeline Badan Usaha", "Diluar Pipeline"], 
             "Prioritas": ["Pipeline RTW atau NTB", "Diluar Pipeline Prio", "Pipeline MDS/MDCI/RDPU"], 
