@@ -2,8 +2,9 @@ const webAppUrl = "https://script.google.com/macros/s/AKfycby1wqgNZdWjF1h0-twOMY
 
 const validCodes = ["11900", "11902", "11903", "11904", "11906", "11907", "11912", "11916", "11920", "11923", "11924", "11929", "11931", "11932", "11934", "11935", "11936", "11937"];
 
+// PERBAIKAN: Menghapus kurung kurawal yang berlebih agar kode bisa jalan
 const menuData = {
-    aktivitas: { 
+    monitoring: { 
         title: "Menu Monitoring", 
         categories: { 
             "Payroll": ["Pipeline PMP", "Pipeline Badan Usaha", "Diluar Pipeline"], 
@@ -15,14 +16,12 @@ const menuData = {
     akuisisi: { 
         title: "Menu Akuisisi", 
         categories: { 
-            "Akuisisi Payroll": ["New Mitra Payroll", "New Rek Payroll New Mitra",  "New Rek Payroll Eksisting Mitra"], 
+            "Akuisisi Payroll": ["New Mitra Payroll", "New Rek Payroll New Mitra", "New Rek Payroll Eksisting Mitra"], 
             "Akuisisi Prioritas": ["RTW", "NTB", "MDS", "MDCI", "RDPU"], 
             "Akuisisi Pebisnis": ["MTB", "Giro", "EDC", "LVM", "Kopra"], 
             "Akuisisi Individu": ["GMM", "Livin", "Simpel", "Tab Reguler", "Multicurrency", "MTR", "Tab Now non GMM"],
             "Akuisisi MTBI & AXA": ["MTBI", "AXA"]
         } 
-    },
-
     }
 };
 
@@ -63,7 +62,9 @@ const configMap = {
     "MTB": { col1: "Nomor Rekening", hideCol2: true, col3: "New CIF?", type3: "select", options: ["New CIF","No"]},
     "Giro": { col1: "Nomor Rekening", hideCol2: true, col3: "New CIF?", type3: "select", options: ["New CIF","No"]},
     "EDC": { hideCol1: true, col2: "Nama Merchant", type2: "text" },
-    "LVM": { hideCol1: true, col2: "Nama Merchant", type2: "text" }
+    "LVM": { hideCol1: true, col2: "Nama Merchant", type2: "text" },
+    "Review Pipeline": { col1: "Nama", col2: "Detail Monitoring", type2: "text" },
+    "Log Aktivitas": { col1: "Kegiatan", col2: "Keterangan", type2: "text" }
 };
 
 let currentMenu = ""; 
@@ -89,7 +90,6 @@ function validateStep1() {
 }
 
 function selectMainMenu(menu) {
-    // Perbaikan: Validasi keberadaan data menu agar tombol monitoring tidak macet
     if (!menuData[menu]) {
         alert("Konfigurasi untuk " + menu + " belum tersedia.");
         return;
@@ -144,7 +144,7 @@ function generateTextInputs() {
     const selectedSub = document.getElementById('dynamic-input-area').getAttribute('data-selected-sub');
     container.innerHTML = ""; 
     
-    const config = configMap[selectedSub] || { col1: "Nama", hideCol2: true };
+    const config = configMap[selectedSub] || { col1: "Nama", col2: "Keterangan", type2: "text" };
     
     if (count > 0) {
         for (let i = 1; i <= count; i++) {
@@ -182,7 +182,8 @@ function generateTextInputs() {
                 }
             }
 
-            if (currentMenu === 'aktivitas') {
+            // Perbaikan logika: status muncul jika di menu monitoring kategori tertentu atau aktivitas
+            if (currentMenu === 'monitoring' || currentMenu === 'aktivitas') {
                 html += `
                 <select class="status-select col-status" onchange="updateColor(this)" style="flex: 2; min-width: 0; padding: 10px;">
                     <option value="" disabled selected>Status</option>
@@ -212,12 +213,13 @@ async function submitFinalData() {
 
     let destinationSheet = "";
     
-    // Perbaikan: Logika penentuan sheet untuk menu monitoring
-    if (currentMenu === 'aktivitas') {
+    // Logika penentuan sheet
+    if (currentMenu === 'monitoring') {
         if (kategori.includes("Payroll")) destinationSheet = "Penginputan Pipeline Payroll";
         else if (kategori.includes("Prioritas")) destinationSheet = "Penginputan Pipeline Prioritas";
         else if (kategori.includes("Pebisnis")) destinationSheet = "Penginputan Pipeline Pebisnis";
         else if (kategori.includes("Individu")) destinationSheet = "Penginputan Pipeline Individu";
+        else destinationSheet = "Data Monitoring";
     } else if (currentMenu === 'akuisisi') {
         if (kategori === "Akuisisi Payroll") destinationSheet = "Akusisi Payroll";
         else if (kategori === "Akuisisi Prioritas") destinationSheet = "Akuisisi Prio";
@@ -225,8 +227,6 @@ async function submitFinalData() {
         else if (kategori === "Akuisisi Individu") destinationSheet = "Akuisisi Individu";
         else if (kategori === "Akuisisi MTBI & AXA") destinationSheet = "Akuisisi MTBI & AXA";
         else destinationSheet = "Data Detail Akuisisi";
-    } else if (currentMenu === 'monitoring') {
-        destinationSheet = "Data Monitoring"; // Sesuaikan nama sheet monitoring Anda
     }
     
     if (destinationSheet === "") {
@@ -239,8 +239,6 @@ async function submitFinalData() {
 
     for (let i = 0; i < rows.length; i++) {
         const row = rows[i];
-        const rowNum = i + 1;
-
         const val1 = row.querySelector('.col-main').value.trim();
         const val2El = row.querySelector('.col-2');
         const val2 = val2El ? val2El.value.trim() : "";
@@ -248,16 +246,6 @@ async function submitFinalData() {
         const val3 = val3El ? val3El.value.trim() : "";
         const statusEl = row.querySelector('.col-status');
         const statusVal = statusEl ? statusEl.value : "Selesai";
-
-        if (!config.hideCol1 && val1 === "") {
-            alert(`Baris ${rowNum}: ${config.col1 || 'Nama'} harus diisi.`);
-            return;
-        }
-
-        if (!config.hideCol2 && val2 === "") {
-            alert(`Baris ${rowNum}: ${config.col2 || 'Data'} harus diisi.`);
-            return;
-        }
 
         dataToSubmit.push({
             targetSheet: destinationSheet,
