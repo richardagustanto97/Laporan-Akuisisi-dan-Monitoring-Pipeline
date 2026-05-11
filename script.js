@@ -21,6 +21,13 @@ const menuData = {
             "Akuisisi Individu": ["GMM", "Livin", "Simpel", "Tab Reguler", "Multicurrency", "MTR", "Tab Now non GMM"],
             "Akuisisi MTBI & AXA": ["MTBI", "AXA"]
         } 
+    },
+    // Menambahkan key monitoring agar fungsi selectMainMenu tidak error
+    monitoring: {
+        title: "Menu Monitoring",
+        categories: {
+            "Monitoring Data": ["Review Pipeline", "Log Aktivitas"]
+        }
     }
 };
 
@@ -87,9 +94,9 @@ function validateStep1() {
 }
 
 function selectMainMenu(menu) {
-    // Validasi: Cek apakah menu ada di menuData
+    // Perbaikan: Validasi keberadaan data menu agar tombol monitoring tidak macet
     if (!menuData[menu]) {
-        alert("Menu " + menu + " belum dikonfigurasi di menuData.");
+        alert("Konfigurasi untuk " + menu + " belum tersedia.");
         return;
     }
     
@@ -147,20 +154,17 @@ function generateTextInputs() {
     if (count > 0) {
         for (let i = 1; i <= count; i++) {
             const row = document.createElement('div'); 
-            row.className = "input-row"; // Class ini akan diatur di CSS dengan display: flex
+            row.className = "input-row"; 
             row.style.marginBottom = "15px";
 
             let html = "";
 
-            // KOLOM 1: Nama Nasabah / PT
             if (config.hideCol1) {
                 html += `<input type="hidden" class="dynamic-text-input col-main" value="">`;
             } else {
-                // Memberikan style flex: 3 langsung agar kolom tulisan lebih lebar
                 html += `<input type="text" placeholder="${i}. ${config.col1}" class="dynamic-text-input col-main" style="flex: 3; min-width: 0; padding: 10px;">`;
             }
 
-            // KOLOM 2: CIF / Nama Merchant / Rekening
             if (!config.hideCol2) {
                 if (config.type2 === "select") {
                     html += `<select class="number-input-small col-2" style="flex: 2; min-width: 0; padding: 10px;">
@@ -172,7 +176,6 @@ function generateTextInputs() {
                 }
             }
 
-            // KOLOM 3: Product Offering (Jika ada)
             if (config.col3 && !config.hideCol3) {
                 if (config.type3 === "select") {
                     html += `<select class="number-input-small col-3" style="flex: 2; min-width: 0; padding: 10px;">
@@ -184,7 +187,6 @@ function generateTextInputs() {
                 }
             }
 
-            // KOLOM STATUS (Hanya muncul di Menu aktivitas)
             if (currentMenu === 'aktivitas') {
                 html += `
                 <select class="status-select col-status" onchange="updateColor(this)" style="flex: 2; min-width: 0; padding: 10px;">
@@ -200,6 +202,7 @@ function generateTextInputs() {
         }
     }
 }
+
 async function submitFinalData() {
     const tanggal = document.getElementById('mon-date').value;
     const kodeCabang = document.getElementById('branch-code').value;
@@ -207,14 +210,14 @@ async function submitFinalData() {
     const subKategori = document.getElementById('dynamic-input-area').getAttribute('data-selected-sub');
     const rows = document.querySelectorAll('.input-row');
     
-    // 1. CEK APAKAH ADA BARIS DATA
     if (rows.length === 0) {
         alert("Mohon masukkan jumlah data terlebih dahulu.");
         return;
     }
 
     let destinationSheet = "";
-    // ... (logika penentuan destinationSheet tetap sama)
+    
+    // Perbaikan: Logika penentuan sheet untuk menu monitoring
     if (currentMenu === 'aktivitas') {
         if (kategori.includes("Payroll")) destinationSheet = "Penginputan Pipeline Payroll";
         else if (kategori.includes("Prioritas")) destinationSheet = "Penginputan Pipeline Prioritas";
@@ -227,15 +230,21 @@ async function submitFinalData() {
         else if (kategori === "Akuisisi Individu") destinationSheet = "Akuisisi Individu";
         else if (kategori === "Akuisisi MTBI & AXA") destinationSheet = "Akuisisi MTBI & AXA";
         else destinationSheet = "Data Detail Akuisisi";
+    } else if (currentMenu === 'monitoring') {
+        destinationSheet = "Data Monitoring"; // Sesuaikan nama sheet monitoring Anda
     }
     
+    if (destinationSheet === "") {
+        alert("Sheet tujuan tidak ditemukan.");
+        return;
+    }
+
     let dataToSubmit = [];
     const config = configMap[subKategori] || {};
 
-    // 2. VALIDASI SETIAP BARIS
     for (let i = 0; i < rows.length; i++) {
         const row = rows[i];
-        const rowNum = i + 1; // Untuk pesan error agar user tahu baris mana yang kosong
+        const rowNum = i + 1;
 
         const val1 = row.querySelector('.col-main').value.trim();
         const val2El = row.querySelector('.col-2');
@@ -245,37 +254,14 @@ async function submitFinalData() {
         const statusEl = row.querySelector('.col-status');
         const statusVal = statusEl ? statusEl.value : "Selesai";
 
-        // Cek Kolom 1 (Jika tidak disembunyikan)
         if (!config.hideCol1 && val1 === "") {
             alert(`Baris ${rowNum}: ${config.col1 || 'Nama'} harus diisi.`);
             return;
         }
 
-        // Cek Kolom 2 (Jika tidak disembunyikan)
         if (!config.hideCol2 && val2 === "") {
             alert(`Baris ${rowNum}: ${config.col2 || 'Data'} harus diisi.`);
             return;
-        }
-
-        // Cek Kolom 3 (Jika ada)
-        if (config.col3 && !config.hideCol3 && val3 === "") {
-            alert(`Baris ${rowNum}: ${config.col3} harus dipilih/diisi.`);
-            return;
-        }
-
-        // Cek Status (Khusus Menu aktivitas)
-        if (currentMenu === 'aktivitas' && !statusVal) {
-            alert(`Baris ${rowNum}: Status harus dipilih.`);
-            return;
-        }
-
-        // Jika lolos validasi, masukkan ke array
-        let finalNama = val1;
-        let finalRek = val2;
-
-        if (config.hideCol1) {
-            finalNama = ""; 
-            finalRek = val2; 
         }
 
         dataToSubmit.push({
@@ -285,14 +271,13 @@ async function submitFinalData() {
             kategori: kategori,      
             subKategori: subKategori,
             total: "1",              
-            namaNasabah: finalNama,
-            cifNasabah: finalRek,
+            namaNasabah: val1,
+            cifNasabah: val2,
             produk: val3,            
             status: statusVal        
         });
     }
 
-    // 3. PROSES KIRIM DATA (Jika semua baris sudah valid)
     const btn = document.getElementById('submit-btn');
     btn.innerText = "Mengirim..."; btn.disabled = true;
 
