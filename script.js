@@ -212,8 +212,6 @@ async function submitFinalData() {
     }
 
     let destinationSheet = "";
-    
-    // Logika penentuan sheet
     if (currentMenu === 'monitoring') {
         if (kategori.includes("Payroll")) destinationSheet = "Penginputan Pipeline Payroll";
         else if (kategori.includes("Prioritas")) destinationSheet = "Penginputan Pipeline Prioritas";
@@ -239,6 +237,8 @@ async function submitFinalData() {
 
     for (let i = 0; i < rows.length; i++) {
         const row = rows[i];
+        const rowNum = i + 1;
+
         const val1 = row.querySelector('.col-main').value.trim();
         const val2El = row.querySelector('.col-2');
         const val2 = val2El ? val2El.value.trim() : "";
@@ -246,6 +246,26 @@ async function submitFinalData() {
         const val3 = val3El ? val3El.value.trim() : "";
         const statusEl = row.querySelector('.col-status');
         const statusVal = statusEl ? statusEl.value : "Selesai";
+
+        // RULES VALIDASI: Hanya cek kolom yang TIDAK di-hide
+        if (!config.hideCol1 && val1 === "") {
+            alert(`Baris ${rowNum}: ${config.col1 || 'Kolom 1'} harus diisi.`);
+            return;
+        }
+        if (!config.hideCol2 && val2 === "") {
+            alert(`Baris ${rowNum}: ${config.col2 || 'Kolom 2'} harus diisi.`);
+            return;
+        }
+        // Khusus Col 3: Hanya wajib jika config.col3 ada dan TIDAK di-hide
+        if (config.col3 && !config.hideCol3 && val3 === "") {
+            alert(`Baris ${rowNum}: ${config.col3} harus diisi.`);
+            return;
+        }
+        // Validasi Status (Jika menu monitoring/aktivitas)
+        if ((currentMenu === 'monitoring' || currentMenu === 'aktivitas') && statusVal === "") {
+            alert(`Baris ${rowNum}: Status harus dipilih.`);
+            return;
+        }
 
         dataToSubmit.push({
             targetSheet: destinationSheet,
