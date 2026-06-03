@@ -1,4 +1,4 @@
-const webAppUrl = "https://script.google.com/macros/s/AKfycbxAas3UXpN9nlzMM4go8NkoUKJHfS7dV9PBFo2ef5qGygl7RLAHcBFOYJY3tIZH00uz/exec";
+const webAppUrl = "https://script.google.com/macros/s/AKfycbwkOFYBD2T_zSlr4erLbTkyiKPDxryGPb9AeJsFZ_eDxcNRFvvzcUNVetf_k5QRIXBV/exec";
 
 const validCodes = ["11900", "11902", "11903", "11904", "11906", "11907", "11912", "11916", "11920", "11923", "11924", "11929", "11931", "11932", "11934", "11935", "11936", "11937"];
 
@@ -41,9 +41,9 @@ const configMap = {
     "Pipeline Cakra": { col1: "Nama", col2: "CIF", type2: "text", col3: "Product Offering"},
     "Kawasan": { col1: "Nama", col2: "CIF", type2: "text", col3: "Product Offering"},
     "Non pipeline": { col1: "Nama", col2: "CIF", type2: "text", col3: "Product Offering"},
-    "New Mitra Payroll": { col1: "Nomor Mitra", col2: "Nama Mitra", type2: "text" },
-    "New Rek Payroll New Mitra": { col1: "Nomor Mitra", col2: "Nomor Rekening", type2: "text",col3: "New CIF?", type3: "select", options: ["New CIF","No"],col4: "Nama Mitra", type4: "text" },
-    "New Rek Payroll Eksisting Mitra" : { col1: "Nomor Mitra", col2: "Nomor Rekening", type2: "text",col3: "New CIF?", type3: "select", options: ["New CIF","No"],col4: "Nama Mitra", type4: "text"},
+    "New Mitra Payroll": { col1: "Nomor Mitra", col2: "Nama Mitra", type2: "text", col3: "CIF Mitra", type3: "text" },
+    "New Rek Payroll New Mitra": { col1: "Nomor Mitra", col2: "Nomor Rekening", type2: "text",col3: "New CIF?", type3: "select", options: ["New CIF","No"],col4: "Nama Mitra", type4: "text", col5: "CIF Mitra", type5: "text" },
+    "New Rek Payroll Eksisting Mitra" : { col1: "Nomor Mitra", col2: "Nomor Rekening", type2: "text",col3: "New CIF?", type3: "select", options: ["New CIF","No"],col4: "Nama Mitra", type4: "text", col5: "CIF Mitra", type5: "text"},
     "MTBI": { col1: "Nomor Rekening", col2: "Jenis Nasabah", type2: "select", options: ["Individu", "Badan Usaha","Payroll","Prioritas"] },
     "AXA": { col1: "Nomor CIF", col2: "Jenis Nasabah", type2: "select", options: ["Individu", "Badan Usaha","Payroll","Prioritas"],col3: "FBI", type3: "text" },
     "RTW": { col1: "Nomor CIF", hideCol2: true },
@@ -197,6 +197,18 @@ function generateTextInputs() {
                 }
             }
 
+            // --- TAMBAHAN LOGIKA UNTUK COL 5 ---
+            if (config.col5 && !config.hideCol5) {
+                if (config.type5 === "select") {
+                    html += `<select class="number-input-small col-5" style="flex: 2; min-width: 0; padding: 10px;">
+                                <option value="" disabled selected>${config.col5}</option>
+                                ${config.options.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
+                             </select>`;
+                } else { 
+                    html += `<input type="text" placeholder="${config.col5}" class="number-input-small col-5" style="flex: 2; min-width: 0; padding: 10px;">`; 
+                }
+            }
+
             // Status
             if (currentMenu === 'monitoring' || currentMenu === 'aktivitas') {
                 html += `
@@ -263,6 +275,8 @@ async function submitFinalData() {
         const statusVal = statusEl ? statusEl.value : "Selesai";
         const val4El = row.querySelector('.col-4');
         const val4 = val4El ? val4El.value.trim() : "";
+        const val5El = row.querySelector('.col-5');
+        const val5 = val5El ? val5El.value.trim() : "";
 
         // RULES VALIDASI: Hanya cek kolom yang TIDAK di-hide
         if (!config.hideCol1 && val1 === "") {
@@ -287,6 +301,10 @@ async function submitFinalData() {
         alert(`Baris ${i + 1}: ${config.col4} harus diisi.`);
         return;
         }
+        if (config.col5 && !config.hideCol5 && val5 === "") {
+        alert(`Baris ${i + 1}: ${config.col5} harus diisi.`);
+        return;
+        }
 
         dataToSubmit.push({
         targetSheet: destinationSheet,
@@ -299,6 +317,7 @@ async function submitFinalData() {
         cifNasabah: val2,
         produk: val3,
         keterangan: val4, // Pastikan di App Script Anda menerima properti 'keterangan' atau ganti namanya sesuai JSON App Script Anda
+        cifMitra: val5, // Kolom tambahan untuk CIF Mitra
         status: statusVal        
     });
 }
