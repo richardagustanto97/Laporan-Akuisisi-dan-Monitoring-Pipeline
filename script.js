@@ -2,7 +2,6 @@ const webAppUrl = "https://script.google.com/macros/s/AKfycbwkOFYBD2T_zSlr4erLbT
 
 const validCodes = ["11900", "11902", "11903", "11904", "11906", "11907", "11912", "11916", "11920", "11923", "11924", "11929", "11931", "11932", "11934", "11935", "11936", "11937"];
 
-// PERBAIKAN: Menghapus kurung kurawal yang berlebih agar kode bisa jalan
 const menuData = {
     monitoring: { 
         title: "Menu Aktivitas", 
@@ -42,10 +41,10 @@ const configMap = {
     "Kawasan": { col1: "Nama", col2: "CIF", type2: "text", col3: "Product Offering"},
     "Non pipeline": { col1: "Nama", col2: "CIF", type2: "text", col3: "Product Offering"},
     "New Mitra Payroll": { col1: "Nomor Mitra", col2: "Nama Mitra", type2: "text", col3: "CIF Mitra", type3: "text" },
-    "New Rek Payroll New Mitra": { col1: "Nomor Mitra", col2: "Nomor Rekening", type2: "text",col3: "New CIF?", type3: "select", options: ["New CIF","No"],col4: "Nama Mitra", type4: "text", col5: "CIF Mitra", type5: "text" },
-    "New Rek Payroll Eksisting Mitra" : { col1: "Nomor Mitra", col2: "Nomor Rekening", type2: "text",col3: "New CIF?", type3: "select", options: ["New CIF","No"],col4: "Nama Mitra", type4: "text", col5: "CIF Mitra", type5: "text"},
+    "New Rek Payroll New Mitra": { col1: "Nomor Mitra", col2: "Nomor Rekening", type2: "text", col3: "New CIF?", type3: "select", options: ["New CIF","No"], col4: "Nama Mitra", type4: "text", col5: "CIF Mitra", type5: "text" },
+    "New Rek Payroll Eksisting Mitra" : { col1: "Nomor Mitra", col2: "Nomor Rekening", type2: "text", col3: "New CIF?", type3: "select", options: ["New CIF","No"], col4: "Nama Mitra", type4: "text", col5: "CIF Mitra", type5: "text"},
     "MTBI": { col1: "Nomor Rekening", col2: "Jenis Nasabah", type2: "select", options: ["Individu", "Badan Usaha","Payroll","Prioritas"] },
-    "AXA": { col1: "Nomor CIF", col2: "Jenis Nasabah", type2: "select", options: ["Individu", "Badan Usaha","Payroll","Prioritas"],col3: "FBI", type3: "text" },
+    "AXA": { col1: "Nomor CIF", col2: "Jenis Nasabah", type2: "select", options: ["Individu", "Badan Usaha","Payroll","Prioritas"], col3: "FBI", type3: "text" },
     "RTW": { col1: "Nomor CIF", hideCol2: true },
     "NTB": { col1: "Nomor CIF", hideCol2: true },
     "MDS": { col1: "Nomor CIF", col2: "Nominal", type2: "text" },
@@ -67,7 +66,81 @@ const configMap = {
     "Log Aktivitas": { col1: "Kegiatan", col2: "Keterangan", type2: "text" }
 };
 
-let currentMenu = ""; 
+let currentMenu = "";
+
+// ============================================================
+// QUEUE SYSTEM - ANTRIAN PENGAJUAN KE GOOGLE SHEETS
+// ============================================================
+let isSubmitting = false;      // Flag: apakah sedang ada proses kirim
+let submissionQueue = [];      // Array antrian data yang menunggu
+let queueCounter = 0;          // ID unik untuk setiap request
+
+/**
+ * Fungsi untuk menambahkan request ke antrian
+ * Jika sedang ada yang dikirim, akan menunggu sampai selesai
+ */
+async function addToQueue(payload) {
+    return new Promise((resolve, reject) => {
+        queueCounter++;
+        submissionQueue.push({
+            id: queueCounter,
+            payload: payload,
+            resolve: resolve,
+            reject: reject
+        });
+        processQueue();
+    });
+}
+
+/**
+ * Fungsi utama antrian: memproses satu per satu secara berurutan
+ */
+async function processQueue() {
+    // Jika sedang ada proses kirim, atau antrian kosong -> keluar
+    if (isSubmitting || submissionQueue.length === 0) {
+        return;
+    }
+
+    isSubmitting = true;
+    const request = submissionQueue.shift(); // Ambil yang pertama
+    const btn = document.getElementById('submit-btn');
+
+    try {
+        console.log(`[Queue #${request.id}] Mengirim data...`);
+
+        const response = await fetch(webAppUrl, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(request.payload)
+        });
+
+        console.log(`[Queue #${request.id}] Sukses dikirim.`);
+        request.resolve({ success: true, id: request.id });
+
+    } catch (err) {
+        console.error(`[Queue #${request.id}] Gagal:`, err);
+        request.reject(err);
+    } finally {
+        // Tunggu sedikit (delay) sebelum lanjut ke antrian berikutnya
+        // Delay ini memberi waktu Google Sheets untuk menyelesaikan proses
+        await new Promise(r => setTimeout(r, 800));
+
+        isSubmitting = false;
+
+        // Lanjutkan ke antrian berikutnya (jika ada)
+        if (submissionQueue.length > 0) {
+            processQueue();
+        } else {
+            // Antrian habis -> reset UI
+            if (btn) {
+                btn.innerText = "Submit Data";
+                btn.disabled = false;
+            }
+        }
+    }
+}
+// ============================================================
 
 function goToPage(pageId) {
     document.querySelectorAll('section').forEach(s => s.style.display = 'none');
@@ -79,7 +152,7 @@ function validateStep1() {
     const codeInput = document.getElementById('branch-code').value.trim();
     const dateInput = document.getElementById('mon-date').value;
     const errorMsg = document.getElementById('error-msg');
-    
+
     if (!dateInput) { alert("Silahkan isi tanggal pelaporan."); return; }
     if (validCodes.includes(codeInput)) { 
         errorMsg.style.display = 'none';
@@ -94,12 +167,12 @@ function selectMainMenu(menu) {
         alert("Konfigurasi untuk " + menu + " belum tersedia.");
         return;
     }
-    
+
     currentMenu = menu;
     const container = document.getElementById('category-options');
     document.getElementById('menu-title').innerText = menuData[menu].title;
     container.innerHTML = "";
-    
+
     Object.keys(menuData[menu].categories).forEach(cat => {
         const btn = document.createElement('button'); 
         btn.className = 'cat-btn';
@@ -113,10 +186,13 @@ function selectMainMenu(menu) {
 function showSub(catName) {
     const container = document.getElementById('sub-options');
     const dynamicArea = document.getElementById('dynamic-input-area');
-    container.innerHTML = ""; dynamicArea.style.display = 'none';
+    container.innerHTML = ""; 
+    dynamicArea.style.display = 'none';
     document.getElementById('sub-title').innerText = "Kategori: " + catName;
+
     menuData[currentMenu].categories[catName].forEach(sub => {
-        const btn = document.createElement('button'); btn.className = 'cat-btn';
+        const btn = document.createElement('button'); 
+        btn.className = 'cat-btn';
         btn.innerText = sub;
         btn.onclick = function() {
             document.getElementById('question-label').innerText = `Input detail untuk: ${sub}`;
@@ -143,9 +219,9 @@ function generateTextInputs() {
     const container = document.getElementById('text-inputs-container');
     const selectedSub = document.getElementById('dynamic-input-area').getAttribute('data-selected-sub');
     container.innerHTML = ""; 
-    
+
     const config = configMap[selectedSub] || { col1: "Nama", col2: "Keterangan", type2: "text" };
-    
+
     if (count > 0) {
         for (let i = 1; i <= count; i++) {
             const row = document.createElement('div'); 
@@ -185,7 +261,7 @@ function generateTextInputs() {
                 }
             }
 
-            // --- TAMBAHAN LOGIKA UNTUK COL 4 ---
+            // Kolom 4
             if (config.col4 && !config.hideCol4) {
                 if (config.type4 === "select") {
                     html += `<select class="number-input-small col-4" style="flex: 2; min-width: 0; padding: 10px;">
@@ -197,7 +273,7 @@ function generateTextInputs() {
                 }
             }
 
-            // --- TAMBAHAN LOGIKA UNTUK COL 5 ---
+            // Kolom 5
             if (config.col5 && !config.hideCol5) {
                 if (config.type5 === "select") {
                     html += `<select class="number-input-small col-5" style="flex: 2; min-width: 0; padding: 10px;">
@@ -209,8 +285,8 @@ function generateTextInputs() {
                 }
             }
 
-            // Status
-            if (currentMenu === 'monitoring' || currentMenu === 'aktivitas') {
+            // Status (hanya untuk menu monitoring)
+            if (currentMenu === 'monitoring') {
                 html += `
                 <select class="status-select col-status" onchange="updateColor(this)" style="flex: 2; min-width: 0; padding: 10px;">
                     <option value="" disabled selected>Status</option>
@@ -219,7 +295,7 @@ function generateTextInputs() {
                     <option value="Follow up">Follow up</option>
                 </select>`;
             }
-            
+
             row.innerHTML = html; 
             container.appendChild(row);
         }
@@ -227,17 +303,23 @@ function generateTextInputs() {
 }
 
 async function submitFinalData() {
+    // Cegah double-submit dari user yang mengklik berulang kali
+    if (isSubmitting && submissionQueue.length > 0) {
+        alert("Sedang memproses pengiriman sebelumnya. Data Anda akan dimasukkan ke antrian.");
+    }
+
     const tanggal = document.getElementById('mon-date').value;
     const kodeCabang = document.getElementById('branch-code').value;
     const kategori = document.getElementById('dynamic-input-area').getAttribute('data-selected-cat');
     const subKategori = document.getElementById('dynamic-input-area').getAttribute('data-selected-sub');
     const rows = document.querySelectorAll('.input-row');
-    
+
     if (rows.length === 0) {
         alert("Mohon masukkan jumlah data terlebih dahulu.");
         return;
     }
 
+    // Tentukan sheet tujuan
     let destinationSheet = "";
     if (currentMenu === 'monitoring') {
         if (kategori.includes("Payroll")) destinationSheet = "Penginputan Pipeline Payroll";
@@ -253,7 +335,7 @@ async function submitFinalData() {
         else if (kategori === "Akuisisi MTBI & AXA") destinationSheet = "Akuisisi MTBI & AXA";
         else destinationSheet = "Data Detail Akuisisi";
     }
-    
+
     if (destinationSheet === "") {
         alert("Sheet tujuan tidak ditemukan.");
         return;
@@ -278,7 +360,7 @@ async function submitFinalData() {
         const val5El = row.querySelector('.col-5');
         const val5 = val5El ? val5El.value.trim() : "";
 
-        // RULES VALIDASI: Hanya cek kolom yang TIDAK di-hide
+        // Validasi: Hanya cek kolom yang TIDAK di-hide
         if (!config.hideCol1 && val1 === "") {
             alert(`Baris ${rowNum}: ${config.col1 || 'Kolom 1'} harus diisi.`);
             return;
@@ -287,72 +369,71 @@ async function submitFinalData() {
             alert(`Baris ${rowNum}: ${config.col2 || 'Kolom 2'} harus diisi.`);
             return;
         }
-        // Khusus Col 3: Hanya wajib jika config.col3 ada dan TIDAK di-hide
         if (config.col3 && !config.hideCol3 && val3 === "") {
             alert(`Baris ${rowNum}: ${config.col3} harus diisi.`);
             return;
         }
-        // Validasi Status (Jika menu monitoring/aktivitas)
-        if ((currentMenu === 'monitoring' || currentMenu === 'aktivitas') && statusVal === "") {
+        if (currentMenu === 'monitoring' && statusVal === "") {
             alert(`Baris ${rowNum}: Status harus dipilih.`);
             return;
         }
         if (config.col4 && !config.hideCol4 && val4 === "") {
-        alert(`Baris ${i + 1}: ${config.col4} harus diisi.`);
-        return;
+            alert(`Baris ${rowNum}: ${config.col4} harus diisi.`);
+            return;
         }
         if (config.col5 && !config.hideCol5 && val5 === "") {
-        alert(`Baris ${i + 1}: ${config.col5} harus diisi.`);
-        return;
+            alert(`Baris ${rowNum}: ${config.col5} harus diisi.`);
+            return;
         }
 
         dataToSubmit.push({
-        targetSheet: destinationSheet,
-        tanggal: tanggal,        
-        kodeCabang: kodeCabang,  
-        kategori: kategori,      
-        subKategori: subKategori,
-        total: "1",              
-        namaNasabah: val1,
-        cifNasabah: val2,
-        produk: val3,
-        keterangan: val4, // Pastikan di App Script Anda menerima properti 'keterangan' atau ganti namanya sesuai JSON App Script Anda
-        cifMitra: val5, // Kolom tambahan untuk CIF Mitra
-        status: statusVal        
-    });
-}
+            targetSheet: destinationSheet,
+            tanggal: tanggal,        
+            kodeCabang: kodeCabang,  
+            kategori: kategori,      
+            subKategori: subKategori,
+            total: "1",              
+            namaNasabah: val1,
+            cifNasabah: val2,
+            produk: val3,
+            keterangan: val4,
+            cifMitra: val5,
+            status: statusVal        
+        });
+    }
 
     const btn = document.getElementById('submit-btn');
-    btn.innerText = "Mengirim..."; btn.disabled = true;
+    btn.innerText = "Mengirim..."; 
+    btn.disabled = true;
 
     try {
-        const requests = dataToSubmit.map(payload => 
-            fetch(webAppUrl, {
-                method: "POST", mode: "no-cors",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
-            })
-        );
-        await Promise.all(requests);
+        // Kirim semua data ke antrian (berurutan, bukan paralel)
+        const results = [];
+        for (const payload of dataToSubmit) {
+            const result = await addToQueue(payload);
+            results.push(result);
+        }
+
         alert(`Sukses! ${dataToSubmit.length} data dikirim ke: ${destinationSheet}`);
         location.reload();
+
     } catch (err) {
-        alert("Kesalahan: " + err);
-        btn.innerText = "Submit Data"; btn.disabled = false;
+        alert("Kesalahan saat mengirim data: " + err.message);
+        btn.innerText = "Submit Data"; 
+        btn.disabled = false;
     }
 }
-// Tambahkan fungsi ini di file script.js Anda
+
 function checkPassword() {
     const password = prompt("Masukkan Password untuk akses database:");
-
-    // Password sesuai permintaan Anda
     if (password === "Gambir119") {
         const url = "https://docs.google.com/spreadsheets/d/18k4W2U653IU7YOkOPNlcmW_aFf7xyqagGq4MpkQMN3E/edit?gid=796948715#gid=796948715";
         window.open(url, "_blank");
     } else if (password !== null) {
-        // Jika user klik 'Cancel', password akan null. 
-        // Pesan salah hanya muncul jika user mengisi password tapi keliru.
         alert("Password Salah! Akses ditolak.");
     }
 }
-function goBackToCategories() { goToPage('page2'); }
+
+function goBackToCategories() { 
+    goToPage('page2'); 
+}
