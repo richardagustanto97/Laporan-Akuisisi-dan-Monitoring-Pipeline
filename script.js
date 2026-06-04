@@ -1,4 +1,4 @@
-const webAppUrl = "https://script.google.com/macros/s/AKfycbwkOFYBD2T_zSlr4erLbTkyiKPDxryGPb9AeJsFZ_eDxcNRFvvzcUNVetf_k5QRIXBV/exec";
+const webAppUrl = "https://script.google.com/macros/s/AKfycby6U9uVR-EkZguO5j954KI027_t8lbiDvb4gFQcyduRF-PQQTm7Ibm_oojxXejxVnrv/exec";
 
 const validCodes = ["11900", "11902", "11903", "11904", "11906", "11907", "11912", "11916", "11920", "11923", "11924", "11929", "11931", "11932", "11934", "11935", "11936", "11937"];
 
@@ -58,10 +58,8 @@ const configMap = {
     "Multicurrency": { col1: "Nomor Rekening", hideCol2: true },
     "MTR": { col1: "Nomor Rekening", hideCol2: true },
     "Tab Now non GMM": { col1: "Nomor Rekening", hideCol2: true },
-    "MTB": { col1: "Nomor Rekening", hideCol2: true, col3: "New CIF?", type3: "select", options: ["New CIF","No"]},
-    "Giro": { col1: "Nomor Rekening", hideCol2: true, col3: "New CIF?", type3: "select", options: ["New CIF","No"]},
-    "EDC": { hideCol1: true, col2: "Nama Merchant", type2: "text" },
-    "LVM": { hideCol1: true, col2: "Nama Merchant", type2: "text" },
+    "EDC": { hideCol1: true, col2: "Nama Merchant", type2: "text", col3: "Nomor Rekening Pencairan", type3: "text", col4: "New CIF?", type4: "select", options: ["New CIF","No"] },
+    "LVM": { hideCol1: true, col2: "Nama Merchant", type2: "text", col3: "Nomor Rekening Pencairan", type3: "text", col4: "New CIF?", type4: "select", options: ["New CIF","No"] },
     "Review Pipeline": { col1: "Nama", col2: "Detail Monitoring", type2: "text" },
     "Log Aktivitas": { col1: "Kegiatan", col2: "Keterangan", type2: "text" }
 };
