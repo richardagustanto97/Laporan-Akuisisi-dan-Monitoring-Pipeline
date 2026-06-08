@@ -42,19 +42,19 @@ const configMap = {
     "Non pipeline": { col1: "Nama", col2: "CIF", type2: "text", col3: "Product Offering"},
     "New Mitra Payroll": { col1: "Nomor Mitra", col2: "Nama Mitra", type2: "text", col3: "CIF Mitra", type3: "text" },
     "New Rek Payroll New Mitra": { 
-    col1: " ", type1: "hidden", 
+    col1: " ", type1: "hidden", hideCol1: true,   // <-- tambahkan ini
     col2: "Nomor Rekening", type2: "text", 
     col3: "New CIF?", type3: "select", options: ["New CIF","No"], 
     col4: "Nama Mitra", type4: "text", 
     col5: "CIF Mitra", type5: "text" 
-    },
-    "New Rek Payroll Eksisting Mitra": { 
-    col1: " ", type1: "hidden", 
+},
+"New Rek Payroll Eksisting Mitra": { 
+    col1: " ", type1: "hidden", hideCol1: true,   // <-- tambahkan ini
     col2: "Nomor Rekening", type2: "text", 
     col3: "New CIF?", type3: "select", options: ["New CIF","No"], 
     col4: "Nama Mitra", type4: "text", 
     col5: "CIF Mitra", type5: "text" 
-    },
+},
     "MTBI": { col1: "Nomor Rekening", col2: "Jenis Nasabah", type2: "select", options: ["Individu", "Badan Usaha","Payroll","Prioritas"] },
     "AXA": { col1: "Nomor CIF", col2: "Jenis Nasabah", type2: "select", options: ["Individu", "Badan Usaha","Payroll","Prioritas"], col3: "FBI", type3: "text" },
     "RTW": { col1: "Nomor CIF", hideCol2: true },
