@@ -55,6 +55,7 @@ const configMap = {
     col4: "Nama Mitra", type4: "text", 
     col5: "CIF Mitra", type5: "text" 
 },
+    "Simpel" : {col1: "Nomor Rekening", col2: "New CIF?", type2: "select", options: ["New CIF","No"],
     "MTB" : { col1: "Nomor Rekening", col2: "Nama Nasabah",col3:" ", type3: "hidden", hideCol3: true, col4: "New CIF?", type4: "select", options: ["New CIF","No"]},
     "Giro": { col1: "Nomor Rekening", col2: "Nama Nasabah",col3:" ", type3: "hidden", hideCol3: true, col4: "New CIF?", type4: "select", options: ["New CIF","No"]},
     "MTBI": { col1: "Nomor Rekening", col2: "Jenis Nasabah", type2: "select", options: ["Individu", "Badan Usaha","Payroll","Prioritas"] },
