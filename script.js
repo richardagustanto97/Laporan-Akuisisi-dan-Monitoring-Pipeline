@@ -18,7 +18,7 @@ const menuData = {
             "Akuisisi Payroll": ["New Mitra Payroll", "New Rek Payroll New Mitra", "New Rek Payroll Eksisting Mitra"], 
             "Akuisisi Prioritas": ["RTW", "NTB", "MDS", "MDCI", "RDPU"], 
             "Akuisisi Pebisnis": ["MTB", "Giro", "EDC", "LVM", "Kopra"], 
-            "Akuisisi Individu": ["GMM", "Livin", "Simpel", "Tab Reguler", "Multicurrency", "MTR", "Tab Now non GMM","Livin Next Gen"],
+            "Akuisisi Individu": ["GMM", "Livin", "Simpel", "Tab Reguler", "Multicurrency", "MTR", "Tab Now non GMM","Livin Next Gen","Incoming CC"],
             "Akuisisi MTBI & AXA": ["MTBI", "AXA"]
         } 
     }
@@ -68,7 +68,7 @@ const configMap = {
     "GMM": { col1: "Nomor Rekening", col2: "New CIF?", type2: "select", options: ["New CIF","No"] },
     "Livin": { hideCol1: true, hideCol2: true },
     "Livin Next Gen": {col1: "Nomor Rekening", hideCol2: true },
-    "Simpel": { col1: "Nomor Rekening", col2: "New CIF?", type2: "select", options: ["New CIF","No"] },
+    "Incoming CC": { col1: "Nama", col2: "NIK", col3: "Tgl Lahir (yymmdd)" },
     "Tab Reguler": { col1: "Nomor Rekening", col2: "New CIF?", type2: "select", options: ["New CIF","No"] },
     "Multicurrency": { col1: "Nomor Rekening", hideCol2: true },
     "MTR": { col1: "Nomor Rekening", hideCol2: true },
