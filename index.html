@@ -8,7 +8,7 @@
 </head>
 <body>
     <div class="container">
-        <!-- PAGE 1: Input Cabang & Tanggal -->
+        <!-- PAGE 1: Input Cabang, Tanggal & NIP -->
         <section id="page1">
             <h2>Data Monitoring & Akuisisi</h2>
             <div class="input-group">
@@ -20,11 +20,14 @@
                 <input type="text" id="branch-code" placeholder="Masukkan 5 digit kode">
                 <p id="error-msg" style="color: red; display: none; font-size: 12px;">Kode Cabang tidak terdaftar!</p>
             </div>
+            <!-- Kolom NIP Baru -->
+            <div class="input-group">
+                <label>NIP</label>
+                <input type="text" id="nip-code" placeholder="Masukkan NIP">
+            </div>
             
             <button onclick="validateStep1()" class="submit-btn">Next</button>
             
-            <!-- Tombol Baru -->
-             
             <button onclick="checkPassword()" class="secondary-btn">
                 Ingin melihat hasil input? Klik Disini
             </button>       

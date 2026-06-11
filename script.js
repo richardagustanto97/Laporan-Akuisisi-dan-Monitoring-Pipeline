@@ -1,4 +1,4 @@
-const webAppUrl = "https://script.google.com/macros/s/AKfycby6U9uVR-EkZguO5j954KI027_t8lbiDvb4gFQcyduRF-PQQTm7Ibm_oojxXejxVnrv/exec";
+const webAppUrl = "https://script.google.com/macros/s/AKfycbzlAuPTWdV_zehPaKLeJwdYev3_7WrC-4PqQbf6SaVi9BHKIq2WNEbPW4yaKKFShH9R/exec";
 
 const validCodes = ["11900", "11902", "11903", "11904", "11906", "11907", "11912", "11916", "11920", "11923", "11924", "11929", "11931", "11932", "11934", "11935", "11936", "11937"];
 
@@ -42,19 +42,19 @@ const configMap = {
     "Non pipeline": { col1: "Nama", col2: "CIF", type2: "text", col3: "Product Offering"},
     "New Mitra Payroll": { col1: "Nomor Mitra", col2: "Nama Mitra", type2: "text", col3: "CIF Mitra", type3: "text" },
     "New Rek Payroll New Mitra": { 
-    col1: " ", type1: "hidden", hideCol1: true,   // <-- tambahkan ini
-    col2: "Nomor Rekening", type2: "text", 
-    col3: "New CIF?", type3: "select", options: ["New CIF","No"], 
-    col4: "Nama Mitra", type4: "text", 
-    col5: "CIF Mitra", type5: "text" 
-},
-"New Rek Payroll Eksisting Mitra": { 
-    col1: " ", type1: "hidden", hideCol1: true,   // <-- tambahkan ini
-    col2: "Nomor Rekening", type2: "text", 
-    col3: "New CIF?", type3: "select", options: ["New CIF","No"], 
-    col4: "Nama Mitra", type4: "text", 
-    col5: "CIF Mitra", type5: "text" 
-},
+        col1: " ", type1: "hidden", hideCol1: true,
+        col2: "Nomor Rekening", type2: "text", 
+        col3: "New CIF?", type3: "select", options: ["New CIF","No"], 
+        col4: "Nama Mitra", type4: "text", 
+        col5: "CIF Mitra", type5: "text" 
+    },
+    "New Rek Payroll Eksisting Mitra": { 
+        col1: " ", type1: "hidden", hideCol1: true,
+        col2: "Nomor Rekening", type2: "text", 
+        col3: "New CIF?", type3: "select", options: ["New CIF","No"], 
+        col4: "Nama Mitra", type4: "text", 
+        col5: "CIF Mitra", type5: "text" 
+    },
     "Simpel": { col1: "Nomor Rekening", col2: "New CIF?", type2: "select", options: ["New CIF","No"] },
     "MTB" : { col1: "Nomor Rekening", col2: "Nama Nasabah",col3:" ", type3: "hidden", hideCol3: true, col4: "New CIF?", type4: "select", options: ["New CIF","No"]},
     "Giro": { col1: "Nomor Rekening", col2: "Nama Nasabah",col3:" ", type3: "hidden", hideCol3: true, col4: "New CIF?", type4: "select", options: ["New CIF","No"]},
@@ -81,18 +81,15 @@ const configMap = {
 };
 
 let currentMenu = "";
+let currentNIP = "";
 
 // ============================================================
 // QUEUE SYSTEM - ANTRIAN PENGAJUAN KE GOOGLE SHEETS
 // ============================================================
-let isSubmitting = false;      // Flag: apakah sedang ada proses kirim
-let submissionQueue = [];      // Array antrian data yang menunggu
-let queueCounter = 0;          // ID unik untuk setiap request
+let isSubmitting = false;
+let submissionQueue = [];
+let queueCounter = 0;
 
-/**
- * Fungsi untuk menambahkan request ke antrian
- * Jika sedang ada yang dikirim, akan menunggu sampai selesai
- */
 async function addToQueue(payload) {
     return new Promise((resolve, reject) => {
         queueCounter++;
@@ -106,17 +103,13 @@ async function addToQueue(payload) {
     });
 }
 
-/**
- * Fungsi utama antrian: memproses satu per satu secara berurutan
- */
 async function processQueue() {
-    // Jika sedang ada proses kirim, atau antrian kosong -> keluar
     if (isSubmitting || submissionQueue.length === 0) {
         return;
     }
 
     isSubmitting = true;
-    const request = submissionQueue.shift(); // Ambil yang pertama
+    const request = submissionQueue.shift();
     const btn = document.getElementById('submit-btn');
 
     try {
@@ -136,17 +129,12 @@ async function processQueue() {
         console.error(`[Queue #${request.id}] Gagal:`, err);
         request.reject(err);
     } finally {
-        // Tunggu sedikit (delay) sebelum lanjut ke antrian berikutnya
-        // Delay ini memberi waktu Google Sheets untuk menyelesaikan proses
         await new Promise(r => setTimeout(r, 800));
-
         isSubmitting = false;
 
-        // Lanjutkan ke antrian berikutnya (jika ada)
         if (submissionQueue.length > 0) {
             processQueue();
         } else {
-            // Antrian habis -> reset UI
             if (btn) {
                 btn.innerText = "Submit Data";
                 btn.disabled = false;
@@ -165,10 +153,13 @@ function goToPage(pageId) {
 function validateStep1() {
     const codeInput = document.getElementById('branch-code').value.trim();
     const dateInput = document.getElementById('mon-date').value;
+    const nipInput = document.getElementById('nip-code').value.trim();
     const errorMsg = document.getElementById('error-msg');
 
     if (!dateInput) { alert("Silahkan isi tanggal pelaporan."); return; }
+    if (!nipInput) { alert("Silahkan isi NIP."); return; }
     if (validCodes.includes(codeInput)) { 
+        currentNIP = nipInput;
         errorMsg.style.display = 'none';
         goToPage('page-main-menu'); 
     } else { 
@@ -299,6 +290,15 @@ function generateTextInputs() {
                 }
             }
 
+            // Jiexpo? - hanya untuk Menu Akuisisi, per baris
+            if (currentMenu === 'akuisisi') {
+                html += `<select class="number-input-small col-jiexpo" style="flex: 1.5; min-width: 0; padding: 10px 4px; font-size: 12px;">
+                            <option value="" disabled selected>Jiexpo?</option>
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                         </select>`;
+            }
+
             // Status (hanya untuk menu monitoring)
             if (currentMenu === 'monitoring') {
                 html += `
@@ -317,13 +317,13 @@ function generateTextInputs() {
 }
 
 async function submitFinalData() {
-    // Cegah double-submit dari user yang mengklik berulang kali
     if (isSubmitting && submissionQueue.length > 0) {
         alert("Sedang memproses pengiriman sebelumnya. Data Anda akan dimasukkan ke antrian.");
     }
 
     const tanggal = document.getElementById('mon-date').value;
     const kodeCabang = document.getElementById('branch-code').value;
+    const nip = document.getElementById('nip-code').value;
     const kategori = document.getElementById('dynamic-input-area').getAttribute('data-selected-cat');
     const subKategori = document.getElementById('dynamic-input-area').getAttribute('data-selected-sub');
     const rows = document.querySelectorAll('.input-row');
@@ -333,7 +333,6 @@ async function submitFinalData() {
         return;
     }
 
-    // Tentukan sheet tujuan
     let destinationSheet = "";
     if (currentMenu === 'monitoring') {
         if (kategori.includes("Payroll")) destinationSheet = "Penginputan Pipeline Payroll";
@@ -373,6 +372,10 @@ async function submitFinalData() {
         const val4 = val4El ? val4El.value.trim() : "";
         const val5El = row.querySelector('.col-5');
         const val5 = val5El ? val5El.value.trim() : "";
+        
+        // Ambil nilai Jiexpo per baris (hanya untuk akuisisi)
+        const jiexpoEl = row.querySelector('.col-jiexpo');
+        const jiexpoValue = jiexpoEl ? jiexpoEl.value.trim() : "";
 
         // Validasi: Hanya cek kolom yang TIDAK di-hide
         if (!config.hideCol1 && val1 === "") {
@@ -399,11 +402,17 @@ async function submitFinalData() {
             alert(`Baris ${rowNum}: ${config.col5} harus diisi.`);
             return;
         }
+        // Validasi Jiexpo untuk Menu Akuisisi
+        if (currentMenu === 'akuisisi' && jiexpoValue === "") {
+            alert(`Baris ${rowNum}: Jiexpo? harus dipilih.`);
+            return;
+        }
 
         dataToSubmit.push({
             targetSheet: destinationSheet,
             tanggal: tanggal,        
-            kodeCabang: kodeCabang,  
+            kodeCabang: kodeCabang,
+            nip: nip,
             kategori: kategori,      
             subKategori: subKategori,
             total: "1",              
@@ -412,6 +421,7 @@ async function submitFinalData() {
             produk: val3,
             keterangan: val4,
             cifMitra: val5,
+            jiexpo: jiexpoValue,
             status: statusVal        
         });
     }
@@ -421,7 +431,6 @@ async function submitFinalData() {
     btn.disabled = true;
 
     try {
-        // Kirim semua data ke antrian (berurutan, bukan paralel)
         const results = [];
         for (const payload of dataToSubmit) {
             const result = await addToQueue(payload);
