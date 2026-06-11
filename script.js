@@ -81,7 +81,7 @@ const configMap = {
 };
 
 let currentMenu = "";
-let currentNIP = "";
+let currentNIP = ""; // Variabel untuk menyimpan NIP
 
 // ============================================================
 // QUEUE SYSTEM - ANTRIAN PENGAJUAN KE GOOGLE SHEETS
@@ -153,13 +153,10 @@ function goToPage(pageId) {
 function validateStep1() {
     const codeInput = document.getElementById('branch-code').value.trim();
     const dateInput = document.getElementById('mon-date').value;
-    const nipInput = document.getElementById('nip-code').value.trim();
     const errorMsg = document.getElementById('error-msg');
 
-    if (!dateInput) { alert("Silahkan isi tanggal pelaporan."); return; }
-    if (!nipInput) { alert("Silahkan isi NIP."); return; }
+    if (!dateInput) { alert("Isi tanggal!"); return; }
     if (validCodes.includes(codeInput)) { 
-        currentNIP = nipInput;
         errorMsg.style.display = 'none';
         goToPage('page-main-menu'); 
     } else { 
@@ -168,12 +165,25 @@ function validateStep1() {
 }
 
 function selectMainMenu(menu) {
-    if (!menuData[menu]) {
-        alert("Konfigurasi untuk " + menu + " belum tersedia.");
-        return;
-    }
-
+    if (!menuData[menu]) { alert("Konfigurasi belum tersedia."); return; }
     currentMenu = menu;
+
+    if (menu === 'akuisisi') {
+        goToPage('page-nip'); // Pindah ke halaman NIP
+    } else {
+        renderCategories(menu); // Langsung ke kategori
+    }
+}
+
+function submitNIP() {
+    const nipInput = document.getElementById('nip-code').value.trim();
+    if (!nipInput) { alert("NIP harus diisi!"); return; }
+    
+    currentNIP = nipInput; // Simpan NIP ke memori sementara
+    renderCategories('akuisisi');
+}
+
+function renderCategories(menu) {
     const container = document.getElementById('category-options');
     document.getElementById('menu-title').innerText = menuData[menu].title;
     container.innerHTML = "";
@@ -293,7 +303,7 @@ function generateTextInputs() {
             // Jiexpo? - hanya untuk Menu Akuisisi, per baris
             if (currentMenu === 'akuisisi') {
                 html += `<select class="number-input-small col-jiexpo" style="flex: 1.5; min-width: 0; padding: 10px 4px; font-size: 12px;">
-                            <option value="" disabled selected>Jiexpo?</option>
+                            <option value="" disabled selected>PRJ</option>
                             <option value="Yes">Yes</option>
                             <option value="No">No</option>
                          </select>`;
@@ -323,7 +333,7 @@ async function submitFinalData() {
 
     const tanggal = document.getElementById('mon-date').value;
     const kodeCabang = document.getElementById('branch-code').value;
-    const nip = document.getElementById('nip-code').value;
+    const nip = currentNIP; // Sekarang mengambil NIP dari memori dengan aman
     const kategori = document.getElementById('dynamic-input-area').getAttribute('data-selected-cat');
     const subKategori = document.getElementById('dynamic-input-area').getAttribute('data-selected-sub');
     const rows = document.querySelectorAll('.input-row');
@@ -377,7 +387,7 @@ async function submitFinalData() {
         const jiexpoEl = row.querySelector('.col-jiexpo');
         const jiexpoValue = jiexpoEl ? jiexpoEl.value.trim() : "";
 
-        // Validasi: Hanya cek kolom yang TIDAK di-hide
+        // Validasi
         if (!config.hideCol1 && val1 === "") {
             alert(`Baris ${rowNum}: ${config.col1 || 'Kolom 1'} harus diisi.`);
             return;

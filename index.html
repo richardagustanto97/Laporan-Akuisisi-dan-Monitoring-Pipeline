@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +8,6 @@
 </head>
 <body>
     <div class="container">
-        <!-- PAGE 1: Input Cabang, Tanggal & NIP -->
         <section id="page1">
             <h2>Data Monitoring & Akuisisi</h2>
             <div class="input-group">
@@ -20,20 +19,21 @@
                 <input type="text" id="branch-code" placeholder="Masukkan 5 digit kode">
                 <p id="error-msg" style="color: red; display: none; font-size: 12px;">Kode Cabang tidak terdaftar!</p>
             </div>
-            <!-- Kolom NIP Baru -->
-            <div class="input-group">
-                <label>NIP</label>
-                <input type="text" id="nip-code" placeholder="Masukkan NIP">
-            </div>
             
             <button onclick="validateStep1()" class="submit-btn">Next</button>
-            
-            <button onclick="checkPassword()" class="secondary-btn">
-                Ingin melihat hasil input? Klik Disini
-            </button>       
+            <button onclick="checkPassword()" class="secondary-btn">Hasil input</button>       
+        </section>
+
+        <section id="page-nip" style="display:none;">
+            <h2>Verifikasi NIP</h2>
+            <div class="input-group">
+                <label>Masukkan NIP Anda</label>
+                <input type="text" id="nip-code" placeholder="NIP">
+            </div>
+            <button class="submit-btn" onclick="submitNIP()">Lanjut</button>
+            <button class="back-btn" onclick="goToPage('page-main-menu')">Kembali</button>
         </section>
             
-        <!-- PAGE 2: Main Menu -->
         <section id="page-main-menu" style="display:none;">
             <h2 id="main-title">Pilih Menu Utama</h2>
             <div class="menu-grid">
@@ -42,14 +42,12 @@
             </div>
         </section>
 
-        <!-- PAGE 3: Categories -->
         <section id="page2" style="display:none;">
             <h2 id="menu-title">Kategori</h2>
             <div id="category-options" class="menu-grid"></div>
             <button class="back-btn" onclick="goToPage('page-main-menu')">Kembali</button>
         </section>
 
-        <!-- PAGE 4: Sub Categories & Input Detail -->
         <section id="page3" style="display:none;">
             <h2 id="sub-title">Sub Kategori</h2>
             <div id="sub-options" class="menu-grid sub-grid"></div>
@@ -66,7 +64,6 @@
             <button class="back-btn" onclick="goBackToCategories()">Kembali</button>
         </section>
     </div>
-
     <script src="script.js"></script>
 </body>
 </html>
