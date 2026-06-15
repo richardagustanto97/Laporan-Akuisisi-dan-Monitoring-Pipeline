@@ -1,4 +1,4 @@
-const webAppUrl = "https://script.google.com/macros/s/AKfycbzlAuPTWdV_zehPaKLeJwdYev3_7WrC-4PqQbf6SaVi9BHKIq2WNEbPW4yaKKFShH9R/exec";
+const webAppUrl = "https://script.google.com/macros/s/AKfycbz63qBiqRuKnOKFwVW3Itna1iluZXXgceOhYZz5J6xjD2EE7LULIm2aDap8nqFKHI8/exec";
 
 const validCodes = ["11900", "11902", "11903", "11904", "11906", "11907", "11912", "11916", "11920", "11923", "11924", "11929", "11931", "11932", "11934", "11935", "11936", "11937"];
 
@@ -37,9 +37,9 @@ const configMap = {
     "Pipeline nasabah dari Area": { col1: "Nama", col2: "CIF", col3: "Product Offering", type3: "select", options: ["LVM", "EDC", "Kopra"] },
     "Kawasan Pebisnis": { col1: "Nama", col2: "CIF", col3: "Product Offering", type3: "select", options: ["LVM", "EDC", "Kopra"] },
     "Non Pipeline dan Non Kawasan": { col1: "Nama", col2: "CIF", col3: "Product Offering", type3: "select", options: ["LVM", "EDC", "Kopra"] },
-    "Pipeline Cakra": { col1: "Nama", col2: "CIF", type2: "text", col3: "Product Offering"},
-    "Kawasan": { col1: "Nama", col2: "CIF", type2: "text", col3: "Product Offering"},
-    "Non pipeline": { col1: "Nama", col2: "CIF", type2: "text", col3: "Product Offering"},
+    "Pipeline Cakra": { col1: "Nama", col2: "CIF", type2: "text", col3: "Product Offering", type3: "select", options: ["LVM", "EDC", "Kopra"] },
+    "Kawasan": { col1: "Nama", col2: "CIF", type2: "text", col3: "Product Offering", type3: "select", options: ["LVM", "EDC", "Kopra"] },
+    "Non pipeline": { col1: "Nama", col2: "CIF", type2: "text", col3: "Product Offering", type3: "select", options: ["LVM", "EDC", "Kopra"] },
     "New Mitra Payroll": { col1: "Nomor Mitra", col2: "Nama Mitra", type2: "text", col3: "CIF Mitra", type3: "text" },
     "New Rek Payroll New Mitra": { 
         col1: " ", type1: "hidden", hideCol1: true,
@@ -56,8 +56,8 @@ const configMap = {
         col5: "CIF Mitra", type5: "text" 
     },
     "Simpel": { col1: "Nomor Rekening", col2: "New CIF?", type2: "select", options: ["New CIF","No"] },
-    "MTB" : { col1: "Nomor Rekening", col2: "Nama Nasabah",col3:" ", type3: "hidden", hideCol3: true, col4: "New CIF?", type4: "select", options: ["New CIF","No"]},
-    "Giro": { col1: "Nomor Rekening", col2: "Nama Nasabah",col3:" ", type3: "hidden", hideCol3: true, col4: "New CIF?", type4: "select", options: ["New CIF","No"]},
+    "MTB" : { col1: "Nomor Rekening", col2: "Nama Nasabah", col3: " ", type3: "hidden", hideCol3: true, col4: "New CIF?", type4: "select", options: ["New CIF","No"]},
+    "Giro": { col1: "Nomor Rekening", col2: "Nama Nasabah", col3: " ", type3: "hidden", hideCol3: true, col4: "New CIF?", type4: "select", options: ["New CIF","No"]},
     "MTBI": { col1: "Nomor Rekening", col2: "Jenis Nasabah", type2: "select", options: ["Individu", "Badan Usaha","Payroll","Prioritas"] },
     "AXA": { col1: "Nomor CIF", col2: "Jenis Nasabah", type2: "select", options: ["Individu", "Badan Usaha","Payroll","Prioritas"], col3: "FBI", type3: "text" },
     "RTW": { col1: "Nomor CIF", hideCol2: true },
@@ -69,7 +69,7 @@ const configMap = {
     "GMM": { col1: "Nomor Rekening", col2: "New CIF?", type2: "select", options: ["New CIF","No"] },
     "Livin": { hideCol1: true, hideCol2: true },
     "Livin Next Gen": {col1: "Nomor Rekening", hideCol2: true },
-    "Incoming CC": { col1: "Nama", col2: "NIK", col3: "Tgl Lahir (yymmdd)" },
+    "Incoming CC": { col1: "Nama", col2: "NIK", col3: "Tgl Lahir (ddmmyy)" },
     "Tab Reguler": { col1: "Nomor Rekening", col2: "New CIF?", type2: "select", options: ["New CIF","No"] },
     "Multicurrency": { col1: "Nomor Rekening", hideCol2: true },
     "MTR": { col1: "Nomor Rekening", hideCol2: true },
@@ -81,7 +81,7 @@ const configMap = {
 };
 
 let currentMenu = "";
-let currentNIP = ""; // Variabel untuk menyimpan NIP
+let currentNIP = "";
 
 // ============================================================
 // QUEUE SYSTEM - ANTRIAN PENGAJUAN KE GOOGLE SHEETS
@@ -169,17 +169,17 @@ function selectMainMenu(menu) {
     currentMenu = menu;
 
     if (menu === 'akuisisi') {
-        goToPage('page-nip'); // Pindah ke halaman NIP
+        goToPage('page-nip');
     } else {
-        renderCategories(menu); // Langsung ke kategori
+        renderCategories(menu);
     }
 }
 
 function submitNIP() {
     const nipInput = document.getElementById('nip-code').value.trim();
     if (!nipInput) { alert("NIP harus diisi!"); return; }
-    
-    currentNIP = nipInput; // Simpan NIP ke memori sementara
+
+    currentNIP = nipInput;
     renderCategories('akuisisi');
 }
 
@@ -253,7 +253,9 @@ function generateTextInputs() {
             }
 
             // Kolom 2
-            if (!config.hideCol2) {
+            if (config.hideCol2) {
+                html += `<input type="hidden" class="number-input-small col-2" value="">`;
+            } else if (config.col2) {
                 if (config.type2 === "select") {
                     html += `<select class="number-input-small col-2" style="flex: 2; min-width: 0; padding: 10px;">
                                 <option value="" disabled selected>${config.col2}</option>
@@ -265,7 +267,9 @@ function generateTextInputs() {
             }
 
             // Kolom 3
-            if (config.col3 && !config.hideCol3) {
+            if (config.hideCol3) {
+                html += `<input type="hidden" class="number-input-small col-3" value="">`;
+            } else if (config.col3) {
                 if (config.type3 === "select") {
                     html += `<select class="number-input-small col-3" style="flex: 2; min-width: 0; padding: 10px;">
                                 <option value="" disabled selected>${config.col3}</option>
@@ -277,7 +281,9 @@ function generateTextInputs() {
             }
 
             // Kolom 4
-            if (config.col4 && !config.hideCol4) {
+            if (config.hideCol4) {
+                html += `<input type="hidden" class="number-input-small col-4" value="">`;
+            } else if (config.col4) {
                 if (config.type4 === "select") {
                     html += `<select class="number-input-small col-4" style="flex: 2; min-width: 0; padding: 10px;">
                                 <option value="" disabled selected>${config.col4}</option>
@@ -289,7 +295,9 @@ function generateTextInputs() {
             }
 
             // Kolom 5
-            if (config.col5 && !config.hideCol5) {
+            if (config.hideCol5) {
+                html += `<input type="hidden" class="number-input-small col-5" value="">`;
+            } else if (config.col5) {
                 if (config.type5 === "select") {
                     html += `<select class="number-input-small col-5" style="flex: 2; min-width: 0; padding: 10px;">
                                 <option value="" disabled selected>${config.col5}</option>
@@ -300,10 +308,15 @@ function generateTextInputs() {
                 }
             }
 
-            // Jiexpo? - hanya untuk Menu Akuisisi, per baris
+            // Jiexpo dan Pasbar - hanya untuk Menu Akuisisi, per baris
             if (currentMenu === 'akuisisi') {
                 html += `<select class="number-input-small col-jiexpo" style="flex: 1.5; min-width: 0; padding: 10px 4px; font-size: 12px;">
                             <option value="" disabled selected>PRJ</option>
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                         </select>`;
+                html += `<select class="number-input-small col-pasbar" style="flex: 1.5; min-width: 0; padding: 10px 4px; font-size: 12px;">
+                            <option value="" disabled selected>Serbu Pasbar?</option>
                             <option value="Yes">Yes</option>
                             <option value="No">No</option>
                          </select>`;
@@ -333,7 +346,7 @@ async function submitFinalData() {
 
     const tanggal = document.getElementById('mon-date').value;
     const kodeCabang = document.getElementById('branch-code').value;
-    const nip = currentNIP; // Sekarang mengambil NIP dari memori dengan aman
+    const nip = currentNIP;
     const kategori = document.getElementById('dynamic-input-area').getAttribute('data-selected-cat');
     const subKategori = document.getElementById('dynamic-input-area').getAttribute('data-selected-sub');
     const rows = document.querySelectorAll('.input-row');
@@ -382,17 +395,18 @@ async function submitFinalData() {
         const val4 = val4El ? val4El.value.trim() : "";
         const val5El = row.querySelector('.col-5');
         const val5 = val5El ? val5El.value.trim() : "";
-        
-        // Ambil nilai Jiexpo per baris (hanya untuk akuisisi)
+
         const jiexpoEl = row.querySelector('.col-jiexpo');
         const jiexpoValue = jiexpoEl ? jiexpoEl.value.trim() : "";
+        const pasbarEl = row.querySelector('.col-pasbar');
+        const pasbarValue = pasbarEl ? pasbarEl.value.trim() : "";
 
         // Validasi
         if (!config.hideCol1 && val1 === "") {
             alert(`Baris ${rowNum}: ${config.col1 || 'Kolom 1'} harus diisi.`);
             return;
         }
-        if (!config.hideCol2 && val2 === "") {
+        if (!config.hideCol2 && config.col2 && val2 === "") {
             alert(`Baris ${rowNum}: ${config.col2 || 'Kolom 2'} harus diisi.`);
             return;
         }
@@ -412,9 +426,12 @@ async function submitFinalData() {
             alert(`Baris ${rowNum}: ${config.col5} harus diisi.`);
             return;
         }
-        // Validasi Jiexpo untuk Menu Akuisisi
         if (currentMenu === 'akuisisi' && jiexpoValue === "") {
-            alert(`Baris ${rowNum}: Jiexpo? harus dipilih.`);
+            alert(`Baris ${rowNum}: PRJ harus dipilih.`);
+            return;
+        }
+        if (currentMenu === 'akuisisi' && pasbarValue === "") {
+            alert(`Baris ${rowNum}: Serbu Pasbar? harus dipilih.`);
             return;
         }
 
@@ -432,6 +449,7 @@ async function submitFinalData() {
             keterangan: val4,
             cifMitra: val5,
             jiexpo: jiexpoValue,
+            pasbar: pasbarValue,    
             status: statusVal        
         });
     }
