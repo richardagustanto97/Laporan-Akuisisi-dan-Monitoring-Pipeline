@@ -229,6 +229,75 @@ function updateColor(selectElement) {
     else if (selectElement.value === "Tidak berminat") selectElement.classList.add('bg-tidak');
 }
 
+// ============================================================
+// VALIDASI PRJ DAN PASBAR - TIDAK BOLEH KEDUANYA YES
+// ============================================================
+function validateRowPRJPasbar(changedElement) {
+    const row = changedElement.closest('.input-row');
+    if (!row) return;
+    
+    const jiexpoEl = row.querySelector('.col-jiexpo');
+    const pasbarEl = row.querySelector('.col-pasbar');
+    
+    if (!jiexpoEl || !pasbarEl) return;
+    
+    const prjValue = jiexpoEl.value.trim();
+    const pasbarValue = pasbarEl.value.trim();
+    
+    // Reset border
+    jiexpoEl.style.border = "";
+    pasbarEl.style.border = "";
+    
+    // Jika keduanya sudah dipilih dan keduanya Yes
+    if (prjValue === "Yes" && pasbarValue === "Yes") {
+        jiexpoEl.style.border = "2px solid red";
+        pasbarEl.style.border = "2px solid red";
+        alert("PRJ dan Pasbar tidak boleh keduanya Yes!\n\nJika PRJ = Yes, maka Pasbar harus No (dan sebaliknya).");
+        
+        // Reset elemen yang baru diubah
+        changedElement.value = "";
+    }
+}
+
+function validatePRJandPasbar() {
+    const rows = document.querySelectorAll('.input-row');
+    let isValid = true;
+    let invalidRows = [];
+
+    for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        const jiexpoEl = row.querySelector('.col-jiexpo');
+        const pasbarEl = row.querySelector('.col-pasbar');
+        
+        if (!jiexpoEl || !pasbarEl) continue;
+        
+        const prjValue = jiexpoEl.value.trim();
+        const pasbarValue = pasbarEl.value.trim();
+        
+        // Jika salah satu sudah dipilih, cek kombinasi
+        if (prjValue !== "" && pasbarValue !== "") {
+            if (prjValue === "Yes" && pasbarValue === "Yes") {
+                isValid = false;
+                invalidRows.push(i + 1);
+                // Highlight error
+                jiexpoEl.style.border = "2px solid red";
+                pasbarEl.style.border = "2px solid red";
+            } else {
+                // Reset border jika valid
+                jiexpoEl.style.border = "";
+                pasbarEl.style.border = "";
+            }
+        }
+    }
+    
+    if (!isValid) {
+        alert(`Baris ${invalidRows.join(', ')}: PRJ dan Pasbar tidak boleh keduanya "Yes".\n\nJika PRJ = Yes, maka Pasbar harus No (dan sebaliknya).`);
+    }
+    
+    return isValid;
+}
+// ============================================================
+
 function generateTextInputs() {
     const count = parseInt(document.getElementById('follow-up-count').value);
     const container = document.getElementById('text-inputs-container');
@@ -310,12 +379,12 @@ function generateTextInputs() {
 
             // Jiexpo dan Pasbar - hanya untuk Menu Akuisisi, per baris
             if (currentMenu === 'akuisisi') {
-                html += `<select class="number-input-small col-jiexpo" style="flex: 1.5; min-width: 0; padding: 10px 4px; font-size: 12px;">
+                html += `<select class="number-input-small col-jiexpo" onchange="validateRowPRJPasbar(this)" style="flex: 1.5; min-width: 0; padding: 10px 4px; font-size: 12px;">
                             <option value="" disabled selected>PRJ</option>
                             <option value="Yes">Yes</option>
                             <option value="No">No</option>
                          </select>`;
-                html += `<select class="number-input-small col-pasbar" style="flex: 1.5; min-width: 0; padding: 10px 4px; font-size: 12px;">
+                html += `<select class="number-input-small col-pasbar" onchange="validateRowPRJPasbar(this)" style="flex: 1.5; min-width: 0; padding: 10px 4px; font-size: 12px;">
                             <option value="" disabled selected>Serbu Pasbar?</option>
                             <option value="Yes">Yes</option>
                             <option value="No">No</option>
@@ -353,6 +422,11 @@ async function submitFinalData() {
 
     if (rows.length === 0) {
         alert("Mohon masukkan jumlah data terlebih dahulu.");
+        return;
+    }
+
+    // Validasi PRJ dan Pasbar tidak boleh keduanya Yes
+    if (!validatePRJandPasbar()) {
         return;
     }
 
