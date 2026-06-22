@@ -18,7 +18,7 @@ const menuData = {
             "Akuisisi Payroll": ["New Mitra Payroll", "New Rek Payroll New Mitra", "New Rek Payroll Eksisting Mitra"], 
             "Akuisisi Prioritas": ["RTW", "NTB", "MDS", "MDCI", "RDPU"], 
             "Akuisisi Pebisnis": ["MTB", "Giro", "EDC", "LVM", "Kopra"], 
-            "Akuisisi Individu": ["GMM", "Livin", "Simpel", "Tab Reguler", "Multicurrency", "MTR", "Tab Now non GMM","Livin Next Gen","Incoming CC"],
+            "Akuisisi Individu": ["GMM", "Livin", "Simpel", "Tab Reguler", "Multicurrency", "MTR", "MTR Emas" ,"Tab Now non GMM","Livin Next Gen","Incoming CC"],
             "Akuisisi MTBI & AXA": ["MTBI", "AXA"]
         } 
     }
@@ -73,6 +73,7 @@ const configMap = {
     "Tab Reguler": { col1: "Nomor Rekening", col2: "New CIF?", type2: "select", options: ["New CIF","No"] },
     "Multicurrency": { col1: "Nomor Rekening", hideCol2: true },
     "MTR": { col1: "Nomor Rekening", hideCol2: true },
+    "MTR Emas": { col1: "Nomor Rekening", hideCol2: true }, 
     "Tab Now non GMM": { col1: "Nomor Rekening", hideCol2: true },
     "EDC": { hideCol1: true, col2: "Nama Merchant", type2: "text", col3: "Nomor Rekening Pencairan", type3: "text", col4: "New CIF?", type4: "select", options: ["New CIF","No"] },
     "LVM": { hideCol1: true, col2: "Nama Merchant", type2: "text", col3: "Nomor Rekening Pencairan", type3: "text", col4: "New CIF?", type4: "select", options: ["New CIF","No"] },
