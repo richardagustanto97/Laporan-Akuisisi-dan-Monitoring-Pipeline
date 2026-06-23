@@ -39,7 +39,58 @@
             <div class="menu-grid">
                 <button class="menu-btn" onclick="selectMainMenu('monitoring')">Menu Monitoring</button>
                 <button class="menu-btn" onclick="selectMainMenu('akuisisi')">Menu Akuisisi</button>
+                <button class="menu-btn" onclick="selectMainMenu('pipeline_merchant')">Pipeline Merchant</button>
             </div>
+        </section>
+
+        <!-- PAGE PIPELINE MERCHANT -->
+        <section id="page-pipeline-merchant" style="display:none;">
+            <h2>Pipeline Merchant</h2>
+            <div id="pipeline-loading" style="text-align:center; padding:20px; color:#666;">
+                <p>Memuat data merchant...</p>
+            </div>
+            <div id="pipeline-content" style="display:none;">
+                <div class="input-group">
+                    <label>Pilih Nama Merchant</label>
+                    <input type="text" id="merchant-input" list="merchant-list" placeholder="Ketik atau pilih merchant..." autocomplete="off" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; font-size:14px; box-sizing:border-box;">
+                    <datalist id="merchant-list"></datalist>
+                </div>
+                
+                <div class="input-group">
+                    <label>Sudah Visit / Belum</label>
+                    <select id="visit-status" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; font-size:14px;">
+                        <option value="" disabled selected>-- Pilih Status Visit --</option>
+                        <option value="Sudah">Sudah</option>
+                        <option value="Belum">Belum</option>
+                    </select>
+                </div>
+                
+                <div class="input-group">
+                    <label>Tanggal Visit</label>
+                    <input type="date" id="visit-date" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; font-size:14px;">
+                </div>
+                
+                <div class="input-group">
+                    <label>Hasil Visit</label>
+                    <select id="visit-result" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; font-size:14px;">
+                        <option value="" disabled selected>-- Pilih Hasil Visit --</option>
+                        <option value="Merchant Eksisting, Klaim ke tim TBR">Merchant Eksisting, Klaim ke tim TBR</option>
+                        <option value="Penawaran">Penawaran</option>
+                        <option value="Done Deal">Done Deal</option>
+                        <option value="Collect Dokumen">Collect Dokumen</option>
+                        <option value="On Proses MTI">On Proses MTI</option>
+                        <option value="On Deploy">On Deploy</option>
+                        <option value="Visit Ulang">Visit Ulang</option>
+                        <option value="Tidak Berminat">Tidak Berminat</option>
+                        <option value="Tidak Ditemukan">Tidak Ditemukan</option>
+                        <option value="Tutup Permanen">Tutup Permanen</option>
+                    </select>
+                </div>
+                
+                <button id="btn-submit-pipeline" class="submit-btn" onclick="submitPipelineMerchant()">Submit Data</button>
+            </div>
+            <div id="pipeline-error" style="display:none; color:red; text-align:center; padding:15px;"></div>
+            <button class="back-btn" onclick="goToPage('page-main-menu')" style="margin-top:15px;">Kembali</button>
         </section>
 
         <section id="page2" style="display:none;">

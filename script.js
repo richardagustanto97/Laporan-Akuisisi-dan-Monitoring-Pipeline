@@ -1,4 +1,4 @@
-const webAppUrl = "https://script.google.com/macros/s/AKfycbwcrWeK1wVBYvz_apFFE7LxY-G9aE-FUPhrnhnAsyq7bRkES1Biyj5AD-yvREj1DuUc/exec";
+const webAppUrl = "https://script.google.com/macros/s/AKfycbxwxkSwB8WvYp8yxc5jnrBp23OYFmkwXznyfx8VO8PVwKswBHX32BrWzlkLrPXOEsox/exec";
 
 const validCodes = ["11900", "11902", "11903", "11904", "11906", "11907", "11912", "11916", "11920", "11923", "11924", "11929", "11931", "11932", "11934", "11935", "11936", "11937"];
 
@@ -83,6 +83,7 @@ const configMap = {
 
 let currentMenu = "";
 let currentNIP = "";
+let merchantData = []; // Store fetched merchant data
 
 // ============================================================
 // QUEUE SYSTEM - ANTRIAN PENGAJUAN KE GOOGLE SHEETS
@@ -111,7 +112,7 @@ async function processQueue() {
 
     isSubmitting = true;
     const request = submissionQueue.shift();
-    const btn = document.getElementById('submit-btn');
+    const btn = document.getElementById('submit-btn') || document.getElementById('btn-submit-pipeline');
 
     try {
         console.log(`[Queue #${request.id}] Mengirim data...`);
@@ -166,6 +167,11 @@ function validateStep1() {
 }
 
 function selectMainMenu(menu) {
+    if (menu === 'pipeline_merchant') {
+        loadPipelineMerchant();
+        return;
+    }
+    
     if (!menuData[menu]) { alert("Konfigurasi belum tersedia."); return; }
     currentMenu = menu;
 
@@ -175,6 +181,120 @@ function selectMainMenu(menu) {
         renderCategories(menu);
     }
 }
+
+// ============================================================
+// PIPELINE MERCHANT FUNCTIONS
+// ============================================================
+async function loadPipelineMerchant() {
+    const kodeCabang = document.getElementById('branch-code').value.trim();
+    
+    goToPage('page-pipeline-merchant');
+    document.getElementById('pipeline-loading').style.display = 'block';
+    document.getElementById('pipeline-content').style.display = 'none';
+    document.getElementById('pipeline-error').style.display = 'none';
+    
+    try {
+        // Fetch merchant data from Google Sheets via GET request
+        const response = await fetch(webAppUrl + '?action=getMerchants&branchCode=' + encodeURIComponent(kodeCabang), {
+            method: "GET",
+            mode: "cors"
+        });
+        
+        const result = await response.json();
+        
+        if (result.error) {
+            throw new Error(result.error);
+        }
+        
+        merchantData = result.merchants || [];
+        
+        if (merchantData.length === 0) {
+            document.getElementById('pipeline-loading').style.display = 'none';
+            document.getElementById('pipeline-error').innerHTML = 'Tidak ada data merchant untuk cabang ' + kodeCabang;
+            document.getElementById('pipeline-error').style.display = 'block';
+            return;
+        }
+        
+        // Populate merchant datalist (searchable dropdown)
+        const datalist = document.getElementById('merchant-list');
+        datalist.innerHTML = '';
+        
+        merchantData.forEach(merchant => {
+            const option = document.createElement('option');
+            option.value = merchant.namaMerchant;
+            datalist.appendChild(option);
+        });
+        
+        document.getElementById('pipeline-loading').style.display = 'none';
+        document.getElementById('pipeline-content').style.display = 'block';
+        
+    } catch (err) {
+        console.error('Error loading merchant data:', err);
+        document.getElementById('pipeline-loading').style.display = 'none';
+        document.getElementById('pipeline-error').innerHTML = 'Gagal memuat data merchant. Error: ' + err.message;
+        document.getElementById('pipeline-error').style.display = 'block';
+    }
+}
+
+async function submitPipelineMerchant() {
+    const kodeCabang = document.getElementById('branch-code').value.trim();
+    const tanggal = document.getElementById('mon-date').value;
+    const namaMerchant = document.getElementById('merchant-input').value.trim();
+    const visitStatus = document.getElementById('visit-status').value;
+    const visitDate = document.getElementById('visit-date').value;
+    const visitResult = document.getElementById('visit-result').value;
+    
+    // Validasi
+    if (!namaMerchant) {
+        alert("Pilih atau ketik Nama Merchant terlebih dahulu!");
+        return;
+    }
+    
+    // Validasi: pastikan merchant yang diketik ada di list
+    const isValidMerchant = merchantData.some(m => m.namaMerchant === namaMerchant);
+    if (!isValidMerchant) {
+        alert("Nama Merchant tidak ditemukan dalam list. Silakan pilih dari daftar yang tersedia.");
+        return;
+    }
+    
+    if (!visitStatus) {
+        alert("Pilih status Sudah Visit / Belum!");
+        return;
+    }
+    if (!visitDate) {
+        alert("Isi Tanggal Visit!");
+        return;
+    }
+    if (!visitResult) {
+        alert("Pilih Hasil Visit!");
+        return;
+    }
+    
+    const btn = document.getElementById('btn-submit-pipeline');
+    btn.innerText = "Mengirim...";
+    btn.disabled = true;
+    
+    const payload = {
+        targetSheet: "Pipeline Merchant",
+        tanggal: tanggal,
+        kodeCabang: kodeCabang,
+        namaMerchant: namaMerchant,
+        visitStatus: visitStatus,
+        visitDate: visitDate,
+        visitResult: visitResult
+    };
+    
+    try {
+        await addToQueue(payload);
+        alert("Sukses! Data Pipeline Merchant telah dikirim.");
+        location.reload();
+    } catch (err) {
+        alert("Kesalahan saat mengirim data: " + err.message);
+        btn.innerText = "Submit Data";
+        btn.disabled = false;
+    }
+}
+// ============================================================
 
 function submitNIP() {
     const nipInput = document.getElementById('nip-code').value.trim();
