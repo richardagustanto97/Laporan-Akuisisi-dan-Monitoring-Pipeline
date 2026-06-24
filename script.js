@@ -1,4 +1,4 @@
-const webAppUrl = "https://script.google.com/macros/s/AKfycby15RXVHflYLApHDTcUH31Xx8AgvXqRcqd4uqoMfL80_myv59rFRKutbANjMad0WFo/exec";
+const webAppUrl = "https://script.google.com/macros/s/AKfycbzDG6FUtUZSEgi912rdmuiotWpb_n3zEK6RtfDtP_aR81Z0tSUGXX9h10xtXSSBCx8/exec";
 
 const validCodes = ["11900", "11902", "11903", "11904", "11906", "11907", "11912", "11916", "11920", "11923", "11924", "11929", "11931", "11932", "11934", "11935", "11936", "11937"];
 
@@ -117,12 +117,12 @@ async function processQueue() {
     try {
         console.log(`[Queue #${request.id}] Mengirim data...`);
 
-        // Gunakan application/json untuk CORS yang proper
-        // GAS harus sudah punya doOptions() handler
+        // Gunakan text/plain untuk menghindari CORS preflight (OPTIONS)
+        // GAS tetap menerima e.postData.contents sebagai JSON string
         const response = await fetch(webAppUrl, {
             method: "POST",
-            mode: "cors",
-            headers: { "Content-Type": "application/json" },
+            redirect: "follow",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
             body: JSON.stringify(request.payload)
         });
 
@@ -206,7 +206,7 @@ async function loadPipelineMerchant() {
         // Fetch merchant data from Google Sheets via GET request
         const response = await fetch(webAppUrl + '?action=getMerchants&branchCode=' + encodeURIComponent(kodeCabang), {
             method: "GET",
-            mode: "cors"
+            redirect: "follow"
         });
 
         const result = await response.json();
