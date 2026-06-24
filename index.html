@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Data Monitoring & Akuisisi</title>
     <link rel="stylesheet" href="style.css">
+<base target="_blank">
 </head>
 <body>
     <div class="container">
@@ -19,7 +20,7 @@
                 <input type="text" id="branch-code" placeholder="Masukkan 5 digit kode">
                 <p id="error-msg" style="color: red; display: none; font-size: 12px;">Kode Cabang tidak terdaftar!</p>
             </div>
-            
+
             <button onclick="validateStep1()" class="submit-btn">Next</button>
             <button onclick="checkPassword()" class="secondary-btn">Hasil input</button>       
         </section>
@@ -33,7 +34,7 @@
             <button class="submit-btn" onclick="submitNIP()">Lanjut</button>
             <button class="back-btn" onclick="goToPage('page-main-menu')">Kembali</button>
         </section>
-            
+
         <section id="page-main-menu" style="display:none;">
             <h2 id="main-title">Pilih Menu Utama</h2>
             <div class="menu-grid">
@@ -55,7 +56,7 @@
                     <input type="text" id="merchant-input" list="merchant-list" placeholder="Ketik atau pilih merchant..." autocomplete="off" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; font-size:14px; box-sizing:border-box;">
                     <datalist id="merchant-list"></datalist>
                 </div>
-                
+
                 <div class="input-group">
                     <label>Sudah Visit / Belum</label>
                     <select id="visit-status" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; font-size:14px;">
@@ -64,12 +65,12 @@
                         <option value="Belum">Belum</option>
                     </select>
                 </div>
-                
+
                 <div class="input-group">
                     <label>Tanggal Visit</label>
                     <input type="date" id="visit-date" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; font-size:14px;">
                 </div>
-                
+
                 <div class="input-group">
                     <label>Hasil Visit</label>
                     <select id="visit-result" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; font-size:14px;">
@@ -79,14 +80,18 @@
                         <option value="Done Deal">Done Deal</option>
                         <option value="Collect Dokumen">Collect Dokumen</option>
                         <option value="On Proses MTI">On Proses MTI</option>
-                        <option value="On Deploy">On Deploy</option>
+                        <option value="Done Akuisisi">Done Akuisisi</option>
                         <option value="Visit Ulang">Visit Ulang</option>
                         <option value="Tidak Berminat">Tidak Berminat</option>
                         <option value="Tidak Ditemukan">Tidak Ditemukan</option>
                         <option value="Tutup Permanen">Tutup Permanen</option>
                     </select>
                 </div>
-                
+
+                <div class="input-group">
+                    <label>Keterangan</label>
+                    <input type="text" id="keterangan-pipeline" placeholder="Masukkan keterangan">
+                </div>
                 <button id="btn-submit-pipeline" class="submit-btn" onclick="submitPipelineMerchant()">Submit Data</button>
             </div>
             <div id="pipeline-error" style="display:none; color:red; text-align:center; padding:15px;"></div>
@@ -101,7 +106,7 @@
 
         <section id="page3" style="display:none;">
             <h2 id="sub-title">Sub Kategori</h2>
-            <div id="sub-options" class="menu-grid sub-grid"></div>
+            <div id="sub-options" class="menu-grid"></div>
             <hr>
             <div id="dynamic-input-area" style="display:none;">
                 <label id="question-label" style="font-weight: bold;"></label>

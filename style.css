@@ -41,7 +41,7 @@ input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; 
 
 .number-input-small, 
 .status-select,
-.col-jiexpo {
+.col-kawasan {
     flex: 2 !important;
     min-width: 0;
     padding: 10px 4px;
@@ -49,11 +49,13 @@ input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; 
     cursor: pointer;
 }
 
-/* Jiexpo select lebih kecil */
-.col-jiexpo {
-    flex: 1.5 !important;
-    font-size: 11px;
-    padding: 10px 2px;
+/* Kawasan select styling */
+.col-kawasan {
+    flex: 2 !important;
+    min-width: 0;
+    padding: 10px 4px;
+    font-size: 12px;
+    cursor: pointer;
 }
 
 /* Memastikan baris input rapi saat dibuka di HP */
@@ -65,9 +67,18 @@ input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; 
     align-items: center;
 }
 
+/* Styling untuk input dan select di dalam input-row */
+.input-row input,
+.input-row select {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
 /* Responsif untuk layar sangat kecil */
 @media (max-width: 380px) {
     .dynamic-text-input { flex: 3.5 !important; }
     .status-select { flex: 1.8 !important; font-size: 11px; }
-    .col-jiexpo { flex: 1.3 !important; font-size: 10px; padding: 10px 1px; }
+    .col-kawasan { flex: 1.3 !important; font-size: 10px; padding: 10px 1px; }
 }

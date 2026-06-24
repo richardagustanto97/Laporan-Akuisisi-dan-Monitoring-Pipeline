@@ -1,4 +1,4 @@
-const webAppUrl = "https://script.google.com/macros/s/AKfycbxwxkSwB8WvYp8yxc5jnrBp23OYFmkwXznyfx8VO8PVwKswBHX32BrWzlkLrPXOEsox/exec";
+const webAppUrl = "https://script.google.com/macros/s/AKfycbyp2DvwTpMkB8jCPaWcIN22dMK_FiTWHJ4g5B53VH6_KXcpq4pPDH1DU_Ntpb8tYUuQ/exec";
 
 const validCodes = ["11900", "11902", "11903", "11904", "11906", "11907", "11912", "11916", "11920", "11923", "11924", "11929", "11931", "11932", "11934", "11935", "11936", "11937"];
 
@@ -117,15 +117,24 @@ async function processQueue() {
     try {
         console.log(`[Queue #${request.id}] Mengirim data...`);
 
+        // Gunakan application/json untuk CORS yang proper
+        // GAS harus sudah punya doOptions() handler
         const response = await fetch(webAppUrl, {
             method: "POST",
-            mode: "no-cors",
+            mode: "cors",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(request.payload)
         });
 
-        console.log(`[Queue #${request.id}] Sukses dikirim.`);
-        request.resolve({ success: true, id: request.id });
+        // Parse response JSON dari GAS
+        const result = await response.json();
+
+        if (result.success) {
+            console.log(`[Queue #${request.id}] Sukses:`, result.message || "Data berhasil dikirim");
+            request.resolve({ success: true, id: request.id, data: result });
+        } else {
+            throw new Error(result.error || "Error dari server");
+        }
 
     } catch (err) {
         console.error(`[Queue #${request.id}] Gagal:`, err);
@@ -171,7 +180,7 @@ function selectMainMenu(menu) {
         loadPipelineMerchant();
         return;
     }
-    
+
     if (!menuData[menu]) { alert("Konfigurasi belum tersedia."); return; }
     currentMenu = menu;
 
@@ -187,47 +196,47 @@ function selectMainMenu(menu) {
 // ============================================================
 async function loadPipelineMerchant() {
     const kodeCabang = document.getElementById('branch-code').value.trim();
-    
+
     goToPage('page-pipeline-merchant');
     document.getElementById('pipeline-loading').style.display = 'block';
     document.getElementById('pipeline-content').style.display = 'none';
     document.getElementById('pipeline-error').style.display = 'none';
-    
+
     try {
         // Fetch merchant data from Google Sheets via GET request
         const response = await fetch(webAppUrl + '?action=getMerchants&branchCode=' + encodeURIComponent(kodeCabang), {
             method: "GET",
             mode: "cors"
         });
-        
+
         const result = await response.json();
-        
+
         if (result.error) {
             throw new Error(result.error);
         }
-        
+
         merchantData = result.merchants || [];
-        
+
         if (merchantData.length === 0) {
             document.getElementById('pipeline-loading').style.display = 'none';
             document.getElementById('pipeline-error').innerHTML = 'Tidak ada data merchant untuk cabang ' + kodeCabang;
             document.getElementById('pipeline-error').style.display = 'block';
             return;
         }
-        
+
         // Populate merchant datalist (searchable dropdown)
         const datalist = document.getElementById('merchant-list');
         datalist.innerHTML = '';
-        
+
         merchantData.forEach(merchant => {
             const option = document.createElement('option');
             option.value = merchant.namaMerchant;
             datalist.appendChild(option);
         });
-        
+
         document.getElementById('pipeline-loading').style.display = 'none';
         document.getElementById('pipeline-content').style.display = 'block';
-        
+
     } catch (err) {
         console.error('Error loading merchant data:', err);
         document.getElementById('pipeline-loading').style.display = 'none';
@@ -243,20 +252,23 @@ async function submitPipelineMerchant() {
     const visitStatus = document.getElementById('visit-status').value;
     const visitDate = document.getElementById('visit-date').value;
     const visitResult = document.getElementById('visit-result').value;
-    
+    const keterangan = document.getElementById('keterangan-pipeline').value.trim();
+
     // Validasi
     if (!namaMerchant) {
         alert("Pilih atau ketik Nama Merchant terlebih dahulu!");
         return;
     }
-    
-    // Validasi: pastikan merchant yang diketik ada di list
-    const isValidMerchant = merchantData.some(m => m.namaMerchant === namaMerchant);
+
+    // Validasi: pastikan merchant yang diketik ada di list (case-insensitive)
+    const isValidMerchant = merchantData.some(m => 
+        m.namaMerchant.trim().toLowerCase() === namaMerchant.trim().toLowerCase()
+    );
     if (!isValidMerchant) {
         alert("Nama Merchant tidak ditemukan dalam list. Silakan pilih dari daftar yang tersedia.");
         return;
     }
-    
+
     if (!visitStatus) {
         alert("Pilih status Sudah Visit / Belum!");
         return;
@@ -269,11 +281,11 @@ async function submitPipelineMerchant() {
         alert("Pilih Hasil Visit!");
         return;
     }
-    
+
     const btn = document.getElementById('btn-submit-pipeline');
     btn.innerText = "Mengirim...";
     btn.disabled = true;
-    
+
     const payload = {
         targetSheet: "Pipeline Merchant",
         tanggal: tanggal,
@@ -281,13 +293,14 @@ async function submitPipelineMerchant() {
         namaMerchant: namaMerchant,
         visitStatus: visitStatus,
         visitDate: visitDate,
-        visitResult: visitResult
+        visitResult: visitResult,
+        keterangan: keterangan
     };
-    
+
     try {
-        await addToQueue(payload);
-        alert("Sukses! Data Pipeline Merchant telah dikirim.");
-        location.reload();
+        const result = await addToQueue(payload);
+        alert("Sukses! Data Pipeline Merchant telah dikirim.\n" + (result.data.message || ""));
+        resetForm();
     } catch (err) {
         alert("Kesalahan saat mengirim data: " + err.message);
         btn.innerText = "Submit Data";
@@ -545,7 +558,7 @@ async function submitFinalData() {
             alert(`Baris ${rowNum}: ${config.col5} harus diisi.`);
             return;
         }
-        
+
         // VALIDASI KAWASAN BARU
         if (currentMenu === 'akuisisi' && kawasanValue === "") {
             alert(`Baris ${rowNum}: Kawasan harus dipilih.`);
@@ -583,13 +596,81 @@ async function submitFinalData() {
         }
 
         alert(`Sukses! ${dataToSubmit.length} data dikirim ke: ${destinationSheet}`);
-        location.reload();
+        resetForm();
 
     } catch (err) {
         alert("Kesalahan saat mengirim data: " + err.message);
         btn.innerText = "Submit Data"; 
         btn.disabled = false;
     }
+}
+
+function resetForm() {
+    // Reset all form inputs without reloading page
+    document.getElementById('mon-date').value = '';
+    document.getElementById('branch-code').value = '';
+    document.getElementById('nip-code').value = '';
+    currentNIP = '';
+    currentMenu = '';
+    merchantData = [];
+
+    // Reset pipeline merchant inputs
+    const merchantInput = document.getElementById('merchant-input');
+    if (merchantInput) merchantInput.value = '';
+    const visitStatus = document.getElementById('visit-status');
+    if (visitStatus) visitStatus.value = '';
+    const visitDate = document.getElementById('visit-date');
+    if (visitDate) visitDate.value = '';
+    const visitResult = document.getElementById('visit-result');
+    if (visitResult) visitResult.value = '';
+    const keteranganPipeline = document.getElementById('keterangan-pipeline');
+    if (keteranganPipeline) keteranganPipeline.value = '';
+
+    // Reset dynamic input area
+    const textInputsContainer = document.getElementById('text-inputs-container');
+    if (textInputsContainer) textInputsContainer.innerHTML = '';
+    const followUpCount = document.getElementById('follow-up-count');
+    if (followUpCount) followUpCount.value = '';
+    const dynamicInputArea = document.getElementById('dynamic-input-area');
+    if (dynamicInputArea) {
+        dynamicInputArea.style.display = 'none';
+        dynamicInputArea.removeAttribute('data-selected-sub');
+        dynamicInputArea.removeAttribute('data-selected-cat');
+    }
+
+    // Reset datalist
+    const datalist = document.getElementById('merchant-list');
+    if (datalist) datalist.innerHTML = '';
+
+    // Reset pipeline sections
+    const pipelineLoading = document.getElementById('pipeline-loading');
+    if (pipelineLoading) pipelineLoading.style.display = 'block';
+    const pipelineContent = document.getElementById('pipeline-content');
+    if (pipelineContent) pipelineContent.style.display = 'none';
+    const pipelineError = document.getElementById('pipeline-error');
+    if (pipelineError) {
+        pipelineError.style.display = 'none';
+        pipelineError.innerHTML = '';
+    }
+
+    // Reset submit buttons
+    const submitBtn = document.getElementById('submit-btn');
+    if (submitBtn) {
+        submitBtn.innerText = "Submit Data";
+        submitBtn.disabled = false;
+    }
+    const btnSubmitPipeline = document.getElementById('btn-submit-pipeline');
+    if (btnSubmitPipeline) {
+        btnSubmitPipeline.innerText = "Submit Data";
+        btnSubmitPipeline.disabled = false;
+    }
+
+    // Clear error message
+    const errorMsg = document.getElementById('error-msg');
+    if (errorMsg) errorMsg.style.display = 'none';
+
+    // Go back to page 1
+    goToPage('page1');
 }
 
 function checkPassword() {
