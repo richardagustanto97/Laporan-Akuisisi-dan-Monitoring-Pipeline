@@ -1,4 +1,4 @@
-const webAppUrl = "https://script.google.com/macros/s/AKfycby15RXVHflYLApHDTcUH31Xx8AgvXqRcqd4uqoMfL80_myv59rFRKutbANjMad0WFo/exec";
+const webAppUrl = "https://script.google.com/macros/s/AKfycby15RXVHflYLApHDTcUH31Xx8AgvXqRcqd4uqoMfL80_myv59rFRKutbANjMad0WFo/exc";
 
 const validCodes = ["11900", "11902", "11903", "11904", "11906", "11907", "11912", "11916", "11920", "11923", "11924", "11929", "11931", "11932", "11934", "11935", "11936", "11937"];
 
