@@ -497,7 +497,7 @@ async function submitFinalData() {
         else if (kategori.includes("Individu")) destinationSheet = "Penginputan Pipeline Individu";
         else destinationSheet = "Data Monitoring";
     } else if (currentMenu === 'akuisisi') {
-        if (kategori === "Akuisisi Payroll") destinationSheet = "Akusisi Payroll";
+        if (kategori === "Akuisisi Payroll") destinationSheet = "Akuisisi Payroll";
         else if (kategori === "Akuisisi Prioritas") destinationSheet = "Akuisisi Prio";
         else if (kategori === "Akuisisi Pebisnis") destinationSheet = "Akuisisi Pebisnis";
         else if (kategori === "Akuisisi Individu") destinationSheet = "Akuisisi Individu";
