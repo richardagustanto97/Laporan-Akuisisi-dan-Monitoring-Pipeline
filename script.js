@@ -451,6 +451,7 @@ function generateTextInputs() {
                             <option value="PRJ">PRJ</option>
                             <option value="Kemayoran">Kemayoran</option>
                             <option value="Serbu Sekolah">Serbu Sekolah</option>
+                            <option value="BASARNAS">BASARNAS</option>
                             <option value="No">No</option>
                         </select>`;
             }
