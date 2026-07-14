@@ -448,10 +448,8 @@ function generateTextInputs() {
                             <option value="" disabled selected>Pilih Kawasan</option>
                             <option value="Pasbar">Pasbar</option>
                             <option value="Mangga Dua">Mangga Dua</option>
-                            <option value="PRJ">PRJ</option>
                             <option value="Kemayoran">Kemayoran</option>
                             <option value="Serbu Sekolah">Serbu Sekolah</option>
-                            <option value="BASARNAS">BASARNAS</option>
                             <option value="No">No</option>
                         </select>`;
             }
