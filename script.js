@@ -1,4 +1,4 @@
-const webAppUrl = "https://script.google.com/macros/s/AKfycbzDG6FUtUZSEgi912rdmuiotWpb_n3zEK6RtfDtP_aR81Z0tSUGXX9h10xtXSSBCx8/exec";
+const webAppUrl = "https://script.google.com/macros/s/AKfycbxT2pBS8M7MkvkunV1oRqghqvA5K4QM1yzSC3JduKEO8zZKgkzEDAX9AjXVbspmpFzX/exec";
 
 const validCodes = ["11900", "11902", "11903", "11904", "11906", "11907", "11912", "11916", "11920", "11923", "11924", "11929", "11931", "11932", "11934", "11935", "11936", "11937"];
 
@@ -84,6 +84,7 @@ const configMap = {
 let currentMenu = "";
 let currentNIP = "";
 let merchantData = []; // Store fetched merchant data
+let newcifData = [];   // Store fetched New CIF data
 
 // ============================================================
 // QUEUE SYSTEM - ANTRIAN PENGAJUAN KE GOOGLE SHEETS
@@ -112,13 +113,11 @@ async function processQueue() {
 
     isSubmitting = true;
     const request = submissionQueue.shift();
-    const btn = document.getElementById('submit-btn') || document.getElementById('btn-submit-pipeline');
+    const btn = document.getElementById('submit-btn') || document.getElementById('btn-submit-pipeline') || document.getElementById('btn-submit-newcif');
 
     try {
         console.log(`[Queue #${request.id}] Mengirim data...`);
 
-        // Gunakan text/plain untuk menghindari CORS preflight (OPTIONS)
-        // GAS tetap menerima e.postData.contents sebagai JSON string
         const response = await fetch(webAppUrl, {
             method: "POST",
             redirect: "follow",
@@ -126,7 +125,6 @@ async function processQueue() {
             body: JSON.stringify(request.payload)
         });
 
-        // Parse response JSON dari GAS
         const result = await response.json();
 
         if (result.success) {
@@ -180,6 +178,10 @@ function selectMainMenu(menu) {
         loadPipelineMerchant();
         return;
     }
+    if (menu === 'pipeline_newcif') {
+        loadPipelineNewCIF();
+        return;
+    }
 
     if (!menuData[menu]) { alert("Konfigurasi belum tersedia."); return; }
     currentMenu = menu;
@@ -203,7 +205,6 @@ async function loadPipelineMerchant() {
     document.getElementById('pipeline-error').style.display = 'none';
 
     try {
-        // Fetch merchant data from Google Sheets via GET request
         const response = await fetch(webAppUrl + '?action=getMerchants&branchCode=' + encodeURIComponent(kodeCabang), {
             method: "GET",
             redirect: "follow"
@@ -224,7 +225,6 @@ async function loadPipelineMerchant() {
             return;
         }
 
-        // Populate merchant datalist (searchable dropdown)
         const datalist = document.getElementById('merchant-list');
         datalist.innerHTML = '';
 
@@ -254,13 +254,11 @@ async function submitPipelineMerchant() {
     const visitResult = document.getElementById('visit-result').value;
     const keterangan = document.getElementById('keterangan-pipeline').value.trim();
 
-    // Validasi
     if (!namaMerchant) {
         alert("Pilih atau ketik Nama Merchant terlebih dahulu!");
         return;
     }
 
-    // Validasi: pastikan merchant yang diketik ada di list (case-insensitive)
     const isValidMerchant = merchantData.some(m => 
         m.namaMerchant.trim().toLowerCase() === namaMerchant.trim().toLowerCase()
     );
@@ -300,6 +298,111 @@ async function submitPipelineMerchant() {
     try {
         const result = await addToQueue(payload);
         alert("Sukses! Data Pipeline Merchant telah dikirim.\n" + (result.data.message || ""));
+        resetForm();
+    } catch (err) {
+        alert("Kesalahan saat mengirim data: " + err.message);
+        btn.innerText = "Submit Data";
+        btn.disabled = false;
+    }
+}
+// ============================================================
+
+// ============================================================
+// PIPELINE NEW CIF FUNCTIONS
+// ============================================================
+async function loadPipelineNewCIF() {
+    const kodeCabang = document.getElementById('branch-code').value.trim();
+
+    goToPage('page-pipeline-newcif');
+    document.getElementById('newcif-loading').style.display = 'block';
+    document.getElementById('newcif-content').style.display = 'none';
+    document.getElementById('newcif-error').style.display = 'none';
+
+    try {
+        const response = await fetch(webAppUrl + '?action=getNewCIFs&branchCode=' + encodeURIComponent(kodeCabang), {
+            method: "GET",
+            redirect: "follow"
+        });
+
+        const result = await response.json();
+
+        if (result.error) {
+            throw new Error(result.error);
+        }
+
+        newcifData = result.data || [];
+
+        if (newcifData.length === 0) {
+            document.getElementById('newcif-loading').style.display = 'none';
+            document.getElementById('newcif-error').innerHTML = 'Tidak ada data New CIF untuk cabang ' + kodeCabang;
+            document.getElementById('newcif-error').style.display = 'block';
+            return;
+        }
+
+        const datalist = document.getElementById('newcif-list');
+        datalist.innerHTML = '';
+
+        newcifData.forEach(item => {
+            const option = document.createElement('option');
+            option.value = item.nama;
+            datalist.appendChild(option);
+        });
+
+        document.getElementById('newcif-loading').style.display = 'none';
+        document.getElementById('newcif-content').style.display = 'block';
+
+    } catch (err) {
+        console.error('Error loading New CIF data:', err);
+        document.getElementById('newcif-loading').style.display = 'none';
+        document.getElementById('newcif-error').innerHTML = 'Gagal memuat data New CIF. Error: ' + err.message;
+        document.getElementById('newcif-error').style.display = 'block';
+    }
+}
+
+async function submitPipelineNewCIF() {
+    const kodeCabang = document.getElementById('branch-code').value.trim();
+    const tanggal = document.getElementById('mon-date').value;
+    const namaNewCIF = document.getElementById('newcif-input').value.trim();
+    const visitStatus = document.getElementById('newcif-visit-status').value;
+    const visitDate = document.getElementById('newcif-visit-date').value;
+    const visitResult = document.getElementById('newcif-visit-result').value;
+    const keterangan = document.getElementById('newcif-keterangan').value.trim();
+
+    if (!namaNewCIF) {
+        alert("Pilih atau ketik Nama/CIF terlebih dahulu!");
+        return;
+    }
+
+    const isValid = newcifData.some(item => 
+        item.nama.trim().toLowerCase() === namaNewCIF.trim().toLowerCase()
+    );
+    if (!isValid) {
+        alert("Nama/CIF tidak ditemukan dalam list. Silakan pilih dari daftar yang tersedia.");
+        return;
+    }
+
+    if (!visitStatus) { alert("Pilih status Sudah Visit / Belum!"); return; }
+    if (!visitDate) { alert("Isi Tanggal Visit!"); return; }
+    if (!visitResult) { alert("Pilih Hasil Visit!"); return; }
+
+    const btn = document.getElementById('btn-submit-newcif');
+    btn.innerText = "Mengirim...";
+    btn.disabled = true;
+
+    const payload = {
+        targetSheet: "Pipeline New CIF",
+        tanggal: tanggal,
+        kodeCabang: kodeCabang,
+        namaNewCIF: namaNewCIF,
+        visitStatus: visitStatus,
+        visitDate: visitDate,
+        visitResult: visitResult,
+        keterangan: keterangan
+    };
+
+    try {
+        const result = await addToQueue(payload);
+        alert("Sukses! Data Pipeline New CIF telah dikirim.\n" + (result.data.message || ""));
         resetForm();
     } catch (err) {
         alert("Kesalahan saat mengirim data: " + err.message);
@@ -528,7 +631,6 @@ async function submitFinalData() {
         const val5El = row.querySelector('.col-5');
         const val5 = val5El ? val5El.value.trim() : "";
 
-        // TANGKAP NILAI KAWASAN BARU
         const kawasanEl = row.querySelector('.col-kawasan');
         const kawasanValue = kawasanEl ? kawasanEl.value.trim() : "";
 
@@ -558,13 +660,11 @@ async function submitFinalData() {
             return;
         }
 
-        // VALIDASI KAWASAN BARU
         if (currentMenu === 'akuisisi' && kawasanValue === "") {
             alert(`Baris ${rowNum}: Kawasan harus dipilih.`);
             return;
         }
 
-        // PERBARUI PAYLOAD
         dataToSubmit.push({
             targetSheet: destinationSheet,
             tanggal: tanggal,        
@@ -605,13 +705,13 @@ async function submitFinalData() {
 }
 
 function resetForm() {
-    // Reset all form inputs without reloading page
     document.getElementById('mon-date').value = '';
     document.getElementById('branch-code').value = '';
     document.getElementById('nip-code').value = '';
     currentNIP = '';
     currentMenu = '';
     merchantData = [];
+    newcifData = [];
 
     // Reset pipeline merchant inputs
     const merchantInput = document.getElementById('merchant-input');
@@ -625,6 +725,24 @@ function resetForm() {
     const keteranganPipeline = document.getElementById('keterangan-pipeline');
     if (keteranganPipeline) keteranganPipeline.value = '';
 
+    // Reset New CIF inputs
+    const newcifInput = document.getElementById('newcif-input');
+    if (newcifInput) newcifInput.value = '';
+    const newcifVisitStatus = document.getElementById('newcif-visit-status');
+    if (newcifVisitStatus) newcifVisitStatus.value = '';
+    const newcifVisitDate = document.getElementById('newcif-visit-date');
+    if (newcifVisitDate) newcifVisitDate.value = '';
+    const newcifVisitResult = document.getElementById('newcif-visit-result');
+    if (newcifVisitResult) newcifVisitResult.value = '';
+    const newcifKeterangan = document.getElementById('newcif-keterangan');
+    if (newcifKeterangan) newcifKeterangan.value = '';
+
+    // Reset datalist
+    const datalist = document.getElementById('merchant-list');
+    if (datalist) datalist.innerHTML = '';
+    const newcifList = document.getElementById('newcif-list');
+    if (newcifList) newcifList.innerHTML = '';
+
     // Reset dynamic input area
     const textInputsContainer = document.getElementById('text-inputs-container');
     if (textInputsContainer) textInputsContainer.innerHTML = '';
@@ -637,10 +755,6 @@ function resetForm() {
         dynamicInputArea.removeAttribute('data-selected-cat');
     }
 
-    // Reset datalist
-    const datalist = document.getElementById('merchant-list');
-    if (datalist) datalist.innerHTML = '';
-
     // Reset pipeline sections
     const pipelineLoading = document.getElementById('pipeline-loading');
     if (pipelineLoading) pipelineLoading.style.display = 'block';
@@ -650,6 +764,17 @@ function resetForm() {
     if (pipelineError) {
         pipelineError.style.display = 'none';
         pipelineError.innerHTML = '';
+    }
+
+    // Reset New CIF sections
+    const newcifLoading = document.getElementById('newcif-loading');
+    if (newcifLoading) newcifLoading.style.display = 'block';
+    const newcifContent = document.getElementById('newcif-content');
+    if (newcifContent) newcifContent.style.display = 'none';
+    const newcifError = document.getElementById('newcif-error');
+    if (newcifError) {
+        newcifError.style.display = 'none';
+        newcifError.innerHTML = '';
     }
 
     // Reset submit buttons
@@ -662,6 +787,11 @@ function resetForm() {
     if (btnSubmitPipeline) {
         btnSubmitPipeline.innerText = "Submit Data";
         btnSubmitPipeline.disabled = false;
+    }
+    const btnSubmitNewCIF = document.getElementById('btn-submit-newcif');
+    if (btnSubmitNewCIF) {
+        btnSubmitNewCIF.innerText = "Submit Data";
+        btnSubmitNewCIF.disabled = false;
     }
 
     // Clear error message

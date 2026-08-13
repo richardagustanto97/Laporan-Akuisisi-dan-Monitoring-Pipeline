@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Data Monitoring & Akuisisi</title>
     <link rel="stylesheet" href="style.css">
-<base target="_blank">
+    <base target="_blank">
 </head>
 <body>
     <div class="container">
@@ -41,6 +41,7 @@
                 <button class="menu-btn" onclick="selectMainMenu('monitoring')">Menu Monitoring</button>
                 <button class="menu-btn" onclick="selectMainMenu('akuisisi')">Menu Akuisisi</button>
                 <button class="menu-btn" onclick="selectMainMenu('pipeline_merchant')">Pipeline GMM Merchant Senator dari Livin</button>
+                <button class="menu-btn" onclick="selectMainMenu('pipeline_newcif')">Pipeline New CIF Individu ke Pebisnis</button>
             </div>
         </section>
 
@@ -95,6 +96,55 @@
                 <button id="btn-submit-pipeline" class="submit-btn" onclick="submitPipelineMerchant()">Submit Data</button>
             </div>
             <div id="pipeline-error" style="display:none; color:red; text-align:center; padding:15px;"></div>
+            <button class="back-btn" onclick="goToPage('page-main-menu')" style="margin-top:15px;">Kembali</button>
+        </section>
+
+        <!-- PAGE PIPELINE NEW CIF -->
+        <section id="page-pipeline-newcif" style="display:none;">
+            <h2>Pipeline New CIF Individu ke Pebisnis</h2>
+            <div id="newcif-loading" style="text-align:center; padding:20px; color:#666;">
+                <p>Memuat data...</p>
+            </div>
+            <div id="newcif-content" style="display:none;">
+                <div class="input-group">
+                    <label>Pilih Nama / CIF</label>
+                    <input type="text" id="newcif-input" list="newcif-list" placeholder="Ketik atau pilih nama/CIF..." autocomplete="off" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; font-size:14px; box-sizing:border-box;">
+                    <datalist id="newcif-list"></datalist>
+                </div>
+
+                <div class="input-group">
+                    <label>Sudah Visit / Belum</label>
+                    <select id="newcif-visit-status" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; font-size:14px;">
+                        <option value="" disabled selected>-- Pilih Status Visit --</option>
+                        <option value="Sudah">Sudah</option>
+                        <option value="Belum">Belum</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label>Tanggal Visit</label>
+                    <input type="date" id="newcif-visit-date" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; font-size:14px;">
+                </div>
+
+                <div class="input-group">
+                    <label>Hasil Visit</label>
+                    <select id="newcif-visit-result" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; font-size:14px;">
+                        <option value="" disabled selected>-- Pilih Hasil Visit --</option>
+                        <option value="Done Akuisisi EDC">Done Akuisisi EDC</option>
+                        <option value="Done Akuisisi Kopra Lite">Done Akuisisi Kopra Lite</option>
+                        <option value="Done Akuisisi LVM">Done Akuisisi LVM</option>
+                        <option value="Nasabah Tidak Berminat">Tidak Berminat</option>
+                        <option value="Perlu Follow Up">Perlu Follow Up</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label>Keterangan</label>
+                    <input type="text" id="newcif-keterangan" placeholder="Masukkan keterangan">
+                </div>
+                <button id="btn-submit-newcif" class="submit-btn" onclick="submitPipelineNewCIF()">Submit Data</button>
+            </div>
+            <div id="newcif-error" style="display:none; color:red; text-align:center; padding:15px;"></div>
             <button class="back-btn" onclick="goToPage('page-main-menu')" style="margin-top:15px;">Kembali</button>
         </section>
 
