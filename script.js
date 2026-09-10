@@ -1,4 +1,4 @@
-const webAppUrl = "https://script.google.com/macros/s/AKfycbxT2pBS8M7MkvkunV1oRqghqvA5K4QM1yzSC3JduKEO8zZKgkzEDAX9AjXVbspmpFzX/exec";
+const webAppUrl = "https://script.google.com/macros/s/AKfycbzjCELVdrp2vWmRaF5Bp0LYcC4Fk03DEpFzT1M3MlDVvUR7E72FO9LKcrdd0Kliw79g/exec";
 
 const validCodes = ["11900", "11902", "11903", "11904", "11906", "11907", "11912", "11916", "11920", "11923", "11924", "11929", "11931", "11932", "11934", "11935", "11936", "11937"];
 
@@ -85,6 +85,16 @@ let currentMenu = "";
 let currentNIP = "";
 let merchantData = []; // Store fetched merchant data
 let newcifData = [];   // Store fetched New CIF data
+let ccData = [];       // Store fetched Leads CC data
+let currentCCType = ""; // Sub kategori Leads CC yang sedang aktif
+
+// Konfigurasi Leads CC: nama sheet sumber & kolom tujuan update
+const ccConfig = {
+    dropfund: { sheet: "LEADS CC NSBH DROP FUND", title: "Leads CC Nasabah Drop Fund" },
+    prio:     { sheet: "LEADS CC PRIORITAS BULAN AGUSTUS", title: "Leads CC Prio Agustus" },
+    payroll:  { sheet: "LEADS PAYROLL INCOME DIATAS 10 JUTA", title: "Leads CC Payroll >10 Jt" },
+    cakra:    { sheet: "LEADS CC CAKRA", title: "Leads CC Cakra" }
+};
 
 // ============================================================
 // QUEUE SYSTEM - ANTRIAN PENGAJUAN KE GOOGLE SHEETS
@@ -180,6 +190,12 @@ function selectMainMenu(menu) {
     }
     if (menu === 'pipeline_newcif') {
         loadPipelineNewCIF();
+        return;
+    }
+    if (menu === 'pipeline_cc') {
+        goToPage('page-pipeline-cc');
+        document.getElementById('cc-sub-menu').style.display = 'block';
+        document.getElementById('cc-form').style.display = 'none';
         return;
     }
 
@@ -419,6 +435,133 @@ function submitNIP() {
     currentNIP = nipInput;
     renderCategories('akuisisi');
 }
+
+
+// ============================================================
+// PIPELINE CC FUNCTIONS
+// ============================================================
+function selectCCType(type) {
+    if (!ccConfig[type]) { alert("Konfigurasi sub kategori CC tidak ditemukan."); return; }
+    currentCCType = type;
+
+    document.getElementById('cc-sub-menu').style.display = 'none';
+    document.getElementById('cc-form').style.display = 'block';
+    document.getElementById('cc-form-title').innerText = ccConfig[type].title;
+
+    // Reset form
+    document.getElementById('cc-input').value = '';
+    document.getElementById('cc-visit-status').value = '';
+    document.getElementById('cc-visit-date').value = '';
+    document.getElementById('cc-visit-result').value = '';
+    document.getElementById('cc-keterangan').value = '';
+    document.getElementById('cc-list').innerHTML = '';
+
+    loadLeadsCC(type);
+}
+
+function backToCCSubMenu() {
+    document.getElementById('cc-form').style.display = 'none';
+    document.getElementById('cc-sub-menu').style.display = 'block';
+    document.getElementById('cc-error').style.display = 'none';
+    ccData = [];
+    currentCCType = "";
+}
+
+async function loadLeadsCC(type) {
+    document.getElementById('cc-loading').style.display = 'block';
+    document.getElementById('cc-content').style.display = 'none';
+    document.getElementById('cc-error').style.display = 'none';
+
+    try {
+        const response = await fetch(webAppUrl + '?action=getLeadsCC&leadType=' + encodeURIComponent(type), {
+            method: "GET",
+            redirect: "follow"
+        });
+
+        const result = await response.json();
+
+        if (result.error) {
+            throw new Error(result.error);
+        }
+
+        ccData = result.data || [];
+
+        if (ccData.length === 0) {
+            document.getElementById('cc-loading').style.display = 'none';
+            document.getElementById('cc-error').innerHTML = 'Tidak ada data di sheet "' + ccConfig[type].sheet + '"';
+            document.getElementById('cc-error').style.display = 'block';
+            return;
+        }
+
+        const datalist = document.getElementById('cc-list');
+        datalist.innerHTML = '';
+
+        ccData.forEach(item => {
+            const option = document.createElement('option');
+            option.value = item.nama;
+            datalist.appendChild(option);
+        });
+
+        document.getElementById('cc-loading').style.display = 'none';
+        document.getElementById('cc-content').style.display = 'block';
+
+    } catch (err) {
+        console.error('Error loading Leads CC data:', err);
+        document.getElementById('cc-loading').style.display = 'none';
+        document.getElementById('cc-error').innerHTML = 'Gagal memuat data Leads CC. Error: ' + err.message;
+        document.getElementById('cc-error').style.display = 'block';
+    }
+}
+
+async function submitPipelineCC() {
+    const namaNasabah = document.getElementById('cc-input').value.trim();
+    const visitStatus = document.getElementById('cc-visit-status').value;
+    const visitDate = document.getElementById('cc-visit-date').value;
+    const visitResult = document.getElementById('cc-visit-result').value;
+    const keterangan = document.getElementById('cc-keterangan').value.trim();
+
+    if (!namaNasabah) {
+        alert("Pilih atau ketik CIF - Nama Nasabah terlebih dahulu!");
+        return;
+    }
+
+    const isValid = ccData.some(item =>
+        item.nama.trim().toLowerCase() === namaNasabah.trim().toLowerCase()
+    );
+    if (!isValid) {
+        alert("CIF - Nama Nasabah tidak ditemukan dalam list. Silakan pilih dari daftar yang tersedia.");
+        return;
+    }
+
+    if (!visitStatus) { alert("Pilih status Sudah Visit / Belum!"); return; }
+    if (!visitDate) { alert("Isi Tanggal Visit/Followup!"); return; }
+    if (!visitResult) { alert("Pilih Hasil Visit/Followup!"); return; }
+
+    const btn = document.getElementById('btn-submit-cc');
+    btn.innerText = "Mengirim...";
+    btn.disabled = true;
+
+    const payload = {
+        targetSheet: "Pipeline CC",
+        leadType: currentCCType,
+        namaNasabah: namaNasabah,
+        visitStatus: visitStatus,
+        visitDate: visitDate,
+        visitResult: visitResult,
+        keterangan: keterangan
+    };
+
+    try {
+        const result = await addToQueue(payload);
+        alert("Sukses! Data " + ccConfig[currentCCType].title + " telah dikirim.\n" + (result.data.message || ""));
+        resetForm();
+    } catch (err) {
+        alert("Kesalahan saat mengirim data: " + err.message);
+        btn.innerText = "Submit Data";
+        btn.disabled = false;
+    }
+}
+// ============================================================
 
 function renderCategories(menu) {
     const container = document.getElementById('category-options');
@@ -736,6 +879,40 @@ function resetForm() {
     if (newcifVisitResult) newcifVisitResult.value = '';
     const newcifKeterangan = document.getElementById('newcif-keterangan');
     if (newcifKeterangan) newcifKeterangan.value = '';
+
+    // Reset Leads CC inputs
+    ccData = [];
+    currentCCType = "";
+    const ccInput = document.getElementById('cc-input');
+    if (ccInput) ccInput.value = '';
+    const ccVisitStatus = document.getElementById('cc-visit-status');
+    if (ccVisitStatus) ccVisitStatus.value = '';
+    const ccVisitDate = document.getElementById('cc-visit-date');
+    if (ccVisitDate) ccVisitDate.value = '';
+    const ccVisitResult = document.getElementById('cc-visit-result');
+    if (ccVisitResult) ccVisitResult.value = '';
+    const ccKeterangan = document.getElementById('cc-keterangan');
+    if (ccKeterangan) ccKeterangan.value = '';
+    const ccList = document.getElementById('cc-list');
+    if (ccList) ccList.innerHTML = '';
+    const ccSubMenu = document.getElementById('cc-sub-menu');
+    if (ccSubMenu) ccSubMenu.style.display = 'block';
+    const ccForm = document.getElementById('cc-form');
+    if (ccForm) ccForm.style.display = 'none';
+    const ccLoading = document.getElementById('cc-loading');
+    if (ccLoading) ccLoading.style.display = 'block';
+    const ccContent = document.getElementById('cc-content');
+    if (ccContent) ccContent.style.display = 'none';
+    const ccError = document.getElementById('cc-error');
+    if (ccError) {
+        ccError.style.display = 'none';
+        ccError.innerHTML = '';
+    }
+    const btnSubmitCC = document.getElementById('btn-submit-cc');
+    if (btnSubmitCC) {
+        btnSubmitCC.innerText = "Submit Data";
+        btnSubmitCC.disabled = false;
+    }
 
     // Reset datalist
     const datalist = document.getElementById('merchant-list');
