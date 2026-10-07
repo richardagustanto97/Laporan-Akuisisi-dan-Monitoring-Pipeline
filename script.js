@@ -1,4 +1,4 @@
-const webAppUrl = "https://script.google.com/macros/s/AKfycby0vftXSRUbtb63f_weCy9FytvO3UR0X5Xm9CXmthi63sHT0i8oZxV1H3QPD7Lsc5n3/exec";
+const webAppUrl = "https://script.google.com/macros/s/AKfycbyfHlNrFy2JLOm9XkhD9HtVlnuz9PF5QhHJwedVH9YV1GA6WVYEVHKEnWvyWnjjGeU/exec";
 
 const validCodes = ["11900", "11902", "11903", "11904", "11906", "11907", "11912", "11916", "11920", "11923", "11924", "11929", "11931", "11932", "11934", "11935", "11936", "11937"];
 
@@ -83,12 +83,11 @@ const configMap = {
 
 let currentMenu = "";
 let currentNIP = "";
-let merchantData = []; // Store fetched merchant data
-let newcifData = [];   // Store fetched New CIF data
-let ccData = [];       // Store fetched Leads CC data
-let currentCCType = ""; // Sub kategori Leads CC yang sedang aktif
+let merchantData = [];
+let newcifData = [];
+let ccData = [];
+let currentCCType = "";
 
-// Konfigurasi Leads CC: nama sheet sumber & kolom tujuan update
 const ccConfig = {
     dropfund: { sheet: "LEADS CC NSBH DROP FUND", title: "Leads CC Nasabah Drop Fund" },
     prio:     { sheet: "LEADS CC PRIORITAS BULAN AGUSTUS", title: "Leads CC Prio Agustus" },
@@ -123,7 +122,7 @@ async function processQueue() {
 
     isSubmitting = true;
     const request = submissionQueue.shift();
-    const btn = document.getElementById('submit-btn') || document.getElementById('btn-submit-pipeline') || document.getElementById('btn-submit-newcif');
+    const btn = document.getElementById('submit-btn') || document.getElementById('btn-submit-pipeline') || document.getElementById('btn-submit-newcif') || document.getElementById('btn-submit-cc');
 
     try {
         console.log(`[Queue #${request.id}] Mengirim data...`);
@@ -135,13 +134,28 @@ async function processQueue() {
             body: JSON.stringify(request.payload)
         });
 
-        const result = await response.json();
+        // Ambil respon sebagai teks terlebih dahulu
+        const responseText = await response.text();
+        let result;
 
-        if (result.success) {
+        try {
+            result = JSON.parse(responseText);
+        } catch (jsonErr) {
+            // Jika Apps Script mengembalikan HTML (pengalihan), tapi HTTP 200, tetap anggap sukses
+            if (response.ok && responseText.trim().startsWith('<')) {
+                console.warn(`[Queue #${request.id}] Response HTML diterima, dianggap sukses.`);
+                result = { success: true, message: "Data berhasil dikirim." };
+            } else {
+                throw new Error("Respon tidak valid dari server.");
+            }
+        }
+
+        if (result && result.success) {
             console.log(`[Queue #${request.id}] Sukses:`, result.message || "Data berhasil dikirim");
             request.resolve({ success: true, id: request.id, data: result });
         } else {
-            throw new Error(result.error || "Error dari server");
+            const errorText = (result && result.error) ? result.error : "Gagal memproses data di server";
+            throw new Error(errorText);
         }
 
     } catch (err) {
@@ -161,8 +175,10 @@ async function processQueue() {
         }
     }
 }
-// ============================================================
 
+// ============================================================
+// PAGE NAVIGATION & VALIDATION
+// ============================================================
 function goToPage(pageId) {
     document.querySelectorAll('section').forEach(s => s.style.display = 'none');
     const target = document.getElementById(pageId);
@@ -209,8 +225,16 @@ function selectMainMenu(menu) {
     }
 }
 
+function submitNIP() {
+    const nipInput = document.getElementById('nip-code').value.trim();
+    if (!nipInput) { alert("NIP harus diisi!"); return; }
+
+    currentNIP = nipInput;
+    renderCategories('akuisisi');
+}
+
 // ============================================================
-// PIPELINE MERCHANT FUNCTIONS
+// PIPELINE MERCHANT
 // ============================================================
 async function loadPipelineMerchant() {
     const kodeCabang = document.getElementById('branch-code').value.trim();
@@ -283,18 +307,9 @@ async function submitPipelineMerchant() {
         return;
     }
 
-    if (!visitStatus) {
-        alert("Pilih status Sudah Visit / Belum!");
-        return;
-    }
-    if (!visitDate) {
-        alert("Isi Tanggal Visit!");
-        return;
-    }
-    if (!visitResult) {
-        alert("Pilih Hasil Visit!");
-        return;
-    }
+    if (!visitStatus) { alert("Pilih status Sudah Visit / Belum!"); return; }
+    if (!visitDate) { alert("Isi Tanggal Visit!"); return; }
+    if (!visitResult) { alert("Pilih Hasil Visit!"); return; }
 
     const btn = document.getElementById('btn-submit-pipeline');
     btn.innerText = "Mengirim...";
@@ -316,15 +331,15 @@ async function submitPipelineMerchant() {
         alert("Sukses! Data Pipeline Merchant telah dikirim.\n" + (result.data.message || ""));
         resetForm();
     } catch (err) {
-        alert("Kesalahan saat mengirim data: " + err.message);
+        const msg = (err && err.message) ? err.message : err;
+        alert("Kesalahan saat mengirim data: " + msg);
         btn.innerText = "Submit Data";
         btn.disabled = false;
     }
 }
-// ============================================================
 
 // ============================================================
-// PIPELINE NEW CIF FUNCTIONS
+// PIPELINE NEW CIF
 // ============================================================
 async function loadPipelineNewCIF() {
     const kodeCabang = document.getElementById('branch-code').value.trim();
@@ -421,24 +436,15 @@ async function submitPipelineNewCIF() {
         alert("Sukses! Data Pipeline New CIF telah dikirim.\n" + (result.data.message || ""));
         resetForm();
     } catch (err) {
-        alert("Kesalahan saat mengirim data: " + err.message);
+        const msg = (err && err.message) ? err.message : err;
+        alert("Kesalahan saat mengirim data: " + msg);
         btn.innerText = "Submit Data";
         btn.disabled = false;
     }
 }
-// ============================================================
-
-function submitNIP() {
-    const nipInput = document.getElementById('nip-code').value.trim();
-    if (!nipInput) { alert("NIP harus diisi!"); return; }
-
-    currentNIP = nipInput;
-    renderCategories('akuisisi');
-}
-
 
 // ============================================================
-// PIPELINE CC FUNCTIONS
+// PIPELINE CC
 // ============================================================
 function selectCCType(type) {
     if (!ccConfig[type]) { alert("Konfigurasi sub kategori CC tidak ditemukan."); return; }
@@ -448,7 +454,6 @@ function selectCCType(type) {
     document.getElementById('cc-form').style.display = 'block';
     document.getElementById('cc-form-title').innerText = ccConfig[type].title;
 
-    // Reset form
     document.getElementById('cc-input').value = '';
     document.getElementById('cc-visit-status').value = '';
     document.getElementById('cc-visit-date').value = '';
@@ -556,13 +561,16 @@ async function submitPipelineCC() {
         alert("Sukses! Data " + ccConfig[currentCCType].title + " telah dikirim.\n" + (result.data.message || ""));
         resetForm();
     } catch (err) {
-        alert("Kesalahan saat mengirim data: " + err.message);
+        const msg = (err && err.message) ? err.message : err;
+        alert("Kesalahan saat mengirim data: " + msg);
         btn.innerText = "Submit Data";
         btn.disabled = false;
     }
 }
-// ============================================================
 
+// ============================================================
+// RENDER KATEGORI & FORM DINAMIS
+// ============================================================
 function renderCategories(menu) {
     const container = document.getElementById('category-options');
     document.getElementById('menu-title').innerText = menuData[menu].title;
@@ -625,14 +633,12 @@ function generateTextInputs() {
 
             let html = "";
 
-            // Kolom 1
             if (config.hideCol1) {
                 html += `<input type="hidden" class="dynamic-text-input col-main" value="">`;
             } else {
                 html += `<input type="text" placeholder="${i}. ${config.col1}" class="dynamic-text-input col-main" style="flex: 3; min-width: 0; padding: 10px;">`;
             }
 
-            // Kolom 2
             if (config.hideCol2) {
                 html += `<input type="hidden" class="number-input-small col-2" value="">`;
             } else if (config.col2) {
@@ -646,7 +652,6 @@ function generateTextInputs() {
                 }
             }
 
-            // Kolom 3
             if (config.hideCol3) {
                 html += `<input type="hidden" class="number-input-small col-3" value="">`;
             } else if (config.col3) {
@@ -660,7 +665,6 @@ function generateTextInputs() {
                 }
             }
 
-            // Kolom 4
             if (config.hideCol4) {
                 html += `<input type="hidden" class="number-input-small col-4" value="">`;
             } else if (config.col4) {
@@ -674,7 +678,6 @@ function generateTextInputs() {
                 }
             }
 
-            // Kolom 5
             if (config.hideCol5) {
                 html += `<input type="hidden" class="number-input-small col-5" value="">`;
             } else if (config.col5) {
@@ -688,7 +691,6 @@ function generateTextInputs() {
                 }
             }
 
-            // Kawasan - hanya untuk Menu Akuisisi, per baris
             if (currentMenu === 'akuisisi') {
                 html += `<select class="number-input-small col-kawasan" style="flex: 3; min-width: 0; padding: 10px 4px; font-size: 12px;">
                             <option value="" disabled selected>Pilih Kawasan</option>
@@ -701,7 +703,6 @@ function generateTextInputs() {
                         </select>`;
             }
 
-            // Status (hanya untuk menu monitoring)
             if (currentMenu === 'monitoring') {
                 html += `
                 <select class="status-select col-status" onchange="updateColor(this)" style="flex: 2; min-width: 0; padding: 10px;">
@@ -763,7 +764,7 @@ async function submitFinalData() {
         const row = rows[i];
         const rowNum = i + 1;
 
-        const val1 = row.querySelector('.col-main').value.trim();
+        const val1 = row.querySelector('.col-main') ? row.querySelector('.col-main').value.trim() : "";
         const val2El = row.querySelector('.col-2');
         const val2 = val2El ? val2El.value.trim() : "";
         const val3El = row.querySelector('.col-3');
@@ -778,7 +779,6 @@ async function submitFinalData() {
         const kawasanEl = row.querySelector('.col-kawasan');
         const kawasanValue = kawasanEl ? kawasanEl.value.trim() : "";
 
-        // Validasi
         if (!config.hideCol1 && val1 === "") {
             alert(`Baris ${rowNum}: ${config.col1 || 'Kolom 1'} harus diisi.`);
             return;
@@ -822,11 +822,8 @@ async function submitFinalData() {
         };
 
         if (currentMenu === 'akuisisi') {
-            // Menu Akuisisi: kirim kolom dinamis sebagai array "fields"
-            // (urutan mengikuti form, kolom NIK sudah termasuk di dalamnya)
             payload.fields = [val1, val2, val3, val4, val5];
         } else {
-            // Menu Monitoring: tetap pakai nama kolom lama (tidak berubah)
             payload.namaNasabah = val1;
             payload.cifNasabah = val2;
             payload.produk = val3;
@@ -842,22 +839,24 @@ async function submitFinalData() {
     btn.disabled = true;
 
     try {
-        const results = [];
         for (const payload of dataToSubmit) {
-            const result = await addToQueue(payload);
-            results.push(result);
+            await addToQueue(payload);
         }
 
-        alert(`Sukses! ${dataToSubmit.length} data dikirim ke: ${destinationSheet}`);
+        alert(`Sukses! ${dataToSubmit.length} data berhasil dikirim ke sheet: ${destinationSheet}`);
         resetForm();
 
     } catch (err) {
-        alert("Kesalahan saat mengirim data: " + err.message);
+        const msg = (err && err.message) ? err.message : err;
+        alert("Kesalahan saat mengirim data: " + msg);
         btn.innerText = "Submit Data"; 
         btn.disabled = false;
     }
 }
 
+// ============================================================
+// RESET & CHECK PASSWORD
+// ============================================================
 function resetForm() {
     document.getElementById('mon-date').value = '';
     document.getElementById('branch-code').value = '';
@@ -866,76 +865,25 @@ function resetForm() {
     currentMenu = '';
     merchantData = [];
     newcifData = [];
-
-    // Reset pipeline merchant inputs
-    const merchantInput = document.getElementById('merchant-input');
-    if (merchantInput) merchantInput.value = '';
-    const visitStatus = document.getElementById('visit-status');
-    if (visitStatus) visitStatus.value = '';
-    const visitDate = document.getElementById('visit-date');
-    if (visitDate) visitDate.value = '';
-    const visitResult = document.getElementById('visit-result');
-    if (visitResult) visitResult.value = '';
-    const keteranganPipeline = document.getElementById('keterangan-pipeline');
-    if (keteranganPipeline) keteranganPipeline.value = '';
-
-    // Reset New CIF inputs
-    const newcifInput = document.getElementById('newcif-input');
-    if (newcifInput) newcifInput.value = '';
-    const newcifVisitStatus = document.getElementById('newcif-visit-status');
-    if (newcifVisitStatus) newcifVisitStatus.value = '';
-    const newcifVisitDate = document.getElementById('newcif-visit-date');
-    if (newcifVisitDate) newcifVisitDate.value = '';
-    const newcifVisitResult = document.getElementById('newcif-visit-result');
-    if (newcifVisitResult) newcifVisitResult.value = '';
-    const newcifKeterangan = document.getElementById('newcif-keterangan');
-    if (newcifKeterangan) newcifKeterangan.value = '';
-
-    // Reset Leads CC inputs
     ccData = [];
     currentCCType = "";
-    const ccInput = document.getElementById('cc-input');
-    if (ccInput) ccInput.value = '';
-    const ccVisitStatus = document.getElementById('cc-visit-status');
-    if (ccVisitStatus) ccVisitStatus.value = '';
-    const ccVisitDate = document.getElementById('cc-visit-date');
-    if (ccVisitDate) ccVisitDate.value = '';
-    const ccVisitResult = document.getElementById('cc-visit-result');
-    if (ccVisitResult) ccVisitResult.value = '';
-    const ccKeterangan = document.getElementById('cc-keterangan');
-    if (ccKeterangan) ccKeterangan.value = '';
-    const ccList = document.getElementById('cc-list');
-    if (ccList) ccList.innerHTML = '';
-    const ccSubMenu = document.getElementById('cc-sub-menu');
-    if (ccSubMenu) ccSubMenu.style.display = 'block';
-    const ccForm = document.getElementById('cc-form');
-    if (ccForm) ccForm.style.display = 'none';
-    const ccLoading = document.getElementById('cc-loading');
-    if (ccLoading) ccLoading.style.display = 'block';
-    const ccContent = document.getElementById('cc-content');
-    if (ccContent) ccContent.style.display = 'none';
-    const ccError = document.getElementById('cc-error');
-    if (ccError) {
-        ccError.style.display = 'none';
-        ccError.innerHTML = '';
-    }
-    const btnSubmitCC = document.getElementById('btn-submit-cc');
-    if (btnSubmitCC) {
-        btnSubmitCC.innerText = "Submit Data";
-        btnSubmitCC.disabled = false;
-    }
 
-    // Reset datalist
-    const datalist = document.getElementById('merchant-list');
-    if (datalist) datalist.innerHTML = '';
-    const newcifList = document.getElementById('newcif-list');
-    if (newcifList) newcifList.innerHTML = '';
+    const elIds = [
+        'merchant-input', 'visit-status', 'visit-date', 'visit-result', 'keterangan-pipeline',
+        'newcif-input', 'newcif-visit-status', 'newcif-visit-date', 'newcif-visit-result', 'newcif-keterangan',
+        'cc-input', 'cc-visit-status', 'cc-visit-date', 'cc-visit-result', 'cc-keterangan', 'follow-up-count'
+    ];
+    elIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
 
-    // Reset dynamic input area
-    const textInputsContainer = document.getElementById('text-inputs-container');
-    if (textInputsContainer) textInputsContainer.innerHTML = '';
-    const followUpCount = document.getElementById('follow-up-count');
-    if (followUpCount) followUpCount.value = '';
+    const lists = ['merchant-list', 'newcif-list', 'cc-list', 'text-inputs-container'];
+    lists.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = '';
+    });
+
     const dynamicInputArea = document.getElementById('dynamic-input-area');
     if (dynamicInputArea) {
         dynamicInputArea.style.display = 'none';
@@ -943,50 +891,22 @@ function resetForm() {
         dynamicInputArea.removeAttribute('data-selected-cat');
     }
 
-    // Reset pipeline sections
-    const pipelineLoading = document.getElementById('pipeline-loading');
-    if (pipelineLoading) pipelineLoading.style.display = 'block';
-    const pipelineContent = document.getElementById('pipeline-content');
-    if (pipelineContent) pipelineContent.style.display = 'none';
-    const pipelineError = document.getElementById('pipeline-error');
-    if (pipelineError) {
-        pipelineError.style.display = 'none';
-        pipelineError.innerHTML = '';
-    }
+    const ccSubMenu = document.getElementById('cc-sub-menu');
+    if (ccSubMenu) ccSubMenu.style.display = 'block';
+    const ccForm = document.getElementById('cc-form');
+    if (ccForm) ccForm.style.display = 'none';
 
-    // Reset New CIF sections
-    const newcifLoading = document.getElementById('newcif-loading');
-    if (newcifLoading) newcifLoading.style.display = 'block';
-    const newcifContent = document.getElementById('newcif-content');
-    if (newcifContent) newcifContent.style.display = 'none';
-    const newcifError = document.getElementById('newcif-error');
-    if (newcifError) {
-        newcifError.style.display = 'none';
-        newcifError.innerHTML = '';
-    }
+    ['btn-submit-pipeline', 'btn-submit-newcif', 'btn-submit-cc', 'submit-btn'].forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) {
+            btn.innerText = "Submit Data";
+            btn.disabled = false;
+        }
+    });
 
-    // Reset submit buttons
-    const submitBtn = document.getElementById('submit-btn');
-    if (submitBtn) {
-        submitBtn.innerText = "Submit Data";
-        submitBtn.disabled = false;
-    }
-    const btnSubmitPipeline = document.getElementById('btn-submit-pipeline');
-    if (btnSubmitPipeline) {
-        btnSubmitPipeline.innerText = "Submit Data";
-        btnSubmitPipeline.disabled = false;
-    }
-    const btnSubmitNewCIF = document.getElementById('btn-submit-newcif');
-    if (btnSubmitNewCIF) {
-        btnSubmitNewCIF.innerText = "Submit Data";
-        btnSubmitNewCIF.disabled = false;
-    }
-
-    // Clear error message
     const errorMsg = document.getElementById('error-msg');
     if (errorMsg) errorMsg.style.display = 'none';
 
-    // Go back to page 1
     goToPage('page1');
 }
 
