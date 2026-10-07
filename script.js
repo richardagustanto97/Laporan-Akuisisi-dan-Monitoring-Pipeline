@@ -1,4 +1,4 @@
-const webAppUrl = "https://script.google.com/macros/s/AKfycbzRO8BYQL-BNUGU5WkYwML0NdGE0bpnEGvSv3mNKkvceGs9mo9IU4eisT2O7THpCuWQ/exec";
+const webAppUrl = "https://script.google.com/macros/s/AKfycby0vftXSRUbtb63f_weCy9FytvO3UR0X5Xm9CXmthi63sHT0i8oZxV1H3QPD7Lsc5n3/exec";
 
 const validCodes = ["11900", "11902", "11903", "11904", "11906", "11907", "11912", "11916", "11920", "11923", "11924", "11929", "11931", "11932", "11934", "11935", "11936", "11937"];
 
@@ -40,45 +40,45 @@ const configMap = {
     "Pipeline Cakra": { col1: "Nama", col2: "CIF", type2: "text", col3: "Product Offering", type3: "select", options: ["LVM", "EDC", "Kopra"] },
     "Kawasan": { col1: "Nama", col2: "CIF", type2: "text", col3: "Product Offering", type3: "select", options: ["LVM", "EDC", "Kopra"] },
     "Non pipeline": { col1: "Nama", col2: "CIF", type2: "text", col3: "Product Offering", type3: "select", options: ["LVM", "EDC", "Kopra"] },
+    "Review Pipeline": { col1: "Nama", col2: "Detail Monitoring", type2: "text" },
+    "Log Aktivitas": { col1: "Kegiatan", col2: "Keterangan", type2: "text" },
     "New Mitra Payroll": { col1: "Nomor Mitra", col2: "Nama Mitra", type2: "text", col3: "CIF Mitra", type3: "text" },
     "New Rek Payroll New Mitra": { 
-        col1: " ", type1: "hidden", hideCol1: true,
-        col2: "Nomor Rekening", type2: "text", 
+        col1: "NIK", type1: "text",
+        col2: "Nomor Rekening", type2: "text",
         col3: "New CIF?", type3: "select", options: ["New CIF","No"], 
         col4: "Nama Mitra", type4: "text", 
-        col5: "CIF Mitra", type5: "text" 
+        col5: "CIF Mitra", type5: "text"
     },
     "New Rek Payroll Eksisting Mitra": { 
-        col1: " ", type1: "hidden", hideCol1: true,
-        col2: "Nomor Rekening", type2: "text", 
+        col1: "NIK", type1: "text",
+        col2: "Nomor Rekening", type2: "text",
         col3: "New CIF?", type3: "select", options: ["New CIF","No"], 
         col4: "Nama Mitra", type4: "text", 
-        col5: "CIF Mitra", type5: "text" 
+        col5: "CIF Mitra", type5: "text"
     },
-    "Simpel": { col1: "Nomor Rekening", col2: "New CIF?", type2: "select", options: ["New CIF","No"] },
-    "MTB" : { col1: "Nomor Rekening", col2: "Nama Nasabah", col3: " ", type3: "hidden", hideCol3: true, col4: "New CIF?", type4: "select", options: ["New CIF","No"]},
-    "Giro": { col1: "Nomor Rekening", col2: "Nama Nasabah", col3: " ", type3: "hidden", hideCol3: true, col4: "New CIF?", type4: "select", options: ["New CIF","No"]},
-    "MTBI": { col1: "Nomor Rekening", col2: "Jenis Nasabah", type2: "select", options: ["Individu", "Badan Usaha","Payroll","Prioritas"] },
-    "AXA": { col1: "Nomor CIF", col2: "Jenis Nasabah", type2: "select", options: ["Individu", "Badan Usaha","Payroll","Prioritas"], col3: "FBI", type3: "text" },
-    "RTW": { col1: "Nomor CIF", hideCol2: true },
-    "NTB": { col1: "Nomor CIF", hideCol2: true },
-    "MDS": { col1: "Nomor CIF", col2: "Nominal", type2: "text" },
-    "MDCI": { col1: "Nomor CIF", col2: "Nominal", type2: "text" },
-    "RDPU": { col1: "Nomor CIF", col2: "Nominal", type2: "text" },
+    "RTW": { col1: "Nomor CIF", col2: "NIK", type2: "text" },
+    "NTB": { col1: "Nomor CIF", col2: "NIK", type2: "text" },
+    "MDS": { col1: "Nomor CIF", col2: "Nominal", type2: "text", col3: "NIK", type3: "text" },
+    "MDCI": { col1: "Nomor CIF", col2: "Nominal", type2: "text", col3: "NIK", type3: "text" },
+    "RDPU": { col1: "Nomor CIF", col2: "Nominal", type2: "text", col3: "NIK", type3: "text" },
+    "MTB": { col1: "Nomor Rekening", col2: "Nama Nasabah", type2: "text", col3: "NIK", type3: "text", col4: "New CIF?", type4: "select", options: ["New CIF","No"] },
+    "Giro": { col1: "Nomor Rekening", col2: "Nama Nasabah", type2: "text", col3: "NIK", type3: "text", col4: "New CIF?", type4: "select", options: ["New CIF","No"] },
+    "EDC": { col1: "NIK", type1: "text", col2: "Nama Merchant", type2: "text", col3: "Nomor Rekening Pencairan", type3: "text", col4: "New CIF?", type4: "select", options: ["New CIF","No"] },
+    "LVM": { col1: "NIK", type1: "text", col2: "Nama Merchant", type2: "text", col3: "Nomor Rekening Pencairan", type3: "text", col4: "New CIF?", type4: "select", options: ["New CIF","No"] },
     "Kopra": { col1: "Nomor CIF", hideCol2: true },
-    "GMM": { col1: "Nomor Rekening", col2: "New CIF?", type2: "select", options: ["New CIF","No"] },
+    "GMM": { col1: "Nomor Rekening", col2: "New CIF?", type2: "select", options: ["New CIF","No"], col3: "NIK", type3: "text", col4: "Nama Nasabah", type4: "text" },
+    "Simpel": { col1: "Nomor Rekening", col2: "New CIF?", type2: "select", options: ["New CIF","No"], col3: "NIK", type3: "text", col4: "Nama Nasabah", type4: "text" },
+    "Tab Reguler": { col1: "Nomor Rekening", col2: "New CIF?", type2: "select", options: ["New CIF","No"], col3: "NIK", type3: "text", col4: "Nama Nasabah", type4: "text" },
+    "Multicurrency": { col1: "Nomor Rekening", col2: "New CIF?", type2: "select", options: ["New CIF","No"], col3: "NIK", type3: "text", col4: "Nama Nasabah", type4: "text" },
+    "MTR": { col1: "Nomor Rekening", col2: "NIK", type2: "text", col3: "Nama Nasabah", type3: "text" },
+    "MTR Emas": { col1: "Nomor Rekening", col2: "NIK", type2: "text", col3: "Nama Nasabah", type3: "text" },
+    "Tab Now non GMM": { col1: "Nomor Rekening", col2: "NIK", type2: "text", col3: "Nama Nasabah", type3: "text" },
+    "Livin Next Gen": { col1: "Nomor Rekening", col2: "NIK", type2: "text", col3: "Nama Nasabah", type3: "text" },
     "Livin": { hideCol1: true, hideCol2: true },
-    "Livin Next Gen": {col1: "Nomor Rekening", hideCol2: true },
-    "Incoming CC": { col1: "Nama", col2: "NIK", col3: "Tgl Lahir (ddmmyy)" },
-    "Tab Reguler": { col1: "Nomor Rekening", col2: "New CIF?", type2: "select", options: ["New CIF","No"] },
-    "Multicurrency": { col1: "Nomor Rekening", hideCol2: true },
-    "MTR": { col1: "Nomor Rekening", hideCol2: true },
-    "MTR Emas": { col1: "Nomor Rekening", hideCol2: true }, 
-    "Tab Now non GMM": { col1: "Nomor Rekening", hideCol2: true },
-    "EDC": { hideCol1: true, col2: "Nama Merchant", type2: "text", col3: "Nomor Rekening Pencairan", type3: "text", col4: "New CIF?", type4: "select", options: ["New CIF","No"] },
-    "LVM": { hideCol1: true, col2: "Nama Merchant", type2: "text", col3: "Nomor Rekening Pencairan", type3: "text", col4: "New CIF?", type4: "select", options: ["New CIF","No"] },
-    "Review Pipeline": { col1: "Nama", col2: "Detail Monitoring", type2: "text" },
-    "Log Aktivitas": { col1: "Kegiatan", col2: "Keterangan", type2: "text" }
+    "Incoming CC": { col1: "Nama Nasabah", col2: "NIK", type2: "text", col3: "Tgl Lahir (ddmmyy)" },
+    "MTBI": { col1: "Nomor Rekening", col2: "NIK", type2: "text", col3: "Nama Nasabah", type3: "text", col4: "Jenis Nasabah", type4: "select", options: ["Individu", "Badan Usaha","Payroll","Prioritas"] },
+    "AXA": { col1: "Nomor CIF", col2: "NIK", type2: "text", col3: "Nama Nasabah", type3: "text", col4: "Jenis Nasabah", type4: "select", options: ["Individu", "Badan Usaha","Payroll","Prioritas"], col5: "FBI", type5: "text" }
 };
 
 let currentMenu = "";
@@ -696,6 +696,7 @@ function generateTextInputs() {
                             <option value="Mangga Dua">Mangga Dua</option>
                             <option value="Kemayoran">Kemayoran</option>
                             <option value="Serbu Sekolah">Serbu Sekolah</option>
+                            <option value="Inacraft">Inacraft</option>
                             <option value="No">No</option>
                         </select>`;
             }
@@ -808,7 +809,7 @@ async function submitFinalData() {
             return;
         }
 
-        dataToSubmit.push({
+        let payload = {
             targetSheet: destinationSheet,
             tanggal: tanggal,        
             kodeCabang: kodeCabang,
@@ -816,14 +817,24 @@ async function submitFinalData() {
             kategori: kategori,      
             subKategori: subKategori,
             total: "1",              
-            namaNasabah: val1,
-            cifNasabah: val2,
-            produk: val3,
-            keterangan: val4,
-            cifMitra: val5,
             kawasan: kawasanValue,
             status: statusVal        
-        });
+        };
+
+        if (currentMenu === 'akuisisi') {
+            // Menu Akuisisi: kirim kolom dinamis sebagai array "fields"
+            // (urutan mengikuti form, kolom NIK sudah termasuk di dalamnya)
+            payload.fields = [val1, val2, val3, val4, val5];
+        } else {
+            // Menu Monitoring: tetap pakai nama kolom lama (tidak berubah)
+            payload.namaNasabah = val1;
+            payload.cifNasabah = val2;
+            payload.produk = val3;
+            payload.keterangan = val4;
+            payload.cifMitra = val5;
+        }
+
+        dataToSubmit.push(payload);
     }
 
     const btn = document.getElementById('submit-btn');
