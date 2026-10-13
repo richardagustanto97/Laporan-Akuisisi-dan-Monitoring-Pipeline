@@ -1,15 +1,18 @@
-const webAppUrl = "https://script.google.com/macros/s/AKfycbyfHlNrFy2JLOm9XkhD9HtVlnuz9PF5QhHJwedVH9YV1GA6WVYEVHKEnWvyWnjjGeU/exec";
+const webAppUrl = "https://script.google.com/macros/s/AKfycbyoHwTD236vXOkdhVBIyM28G6fT0sv0G9vi15MOWxkc96EPe2VPao72KdCIChmaIyQA/exec";
 
 const validCodes = ["11900", "11902", "11903", "11904", "11906", "11907", "11912", "11916", "11920", "11923", "11924", "11929", "11931", "11932", "11934", "11935", "11936", "11937"];
 
 const menuData = {
     monitoring: { 
-        title: "Menu Aktivitas", 
+        title: "Menu Monitoring", 
         categories: { 
-            "Payroll": ["Pipeline PMP", "Pipeline Badan Usaha", "Diluar Pipeline"], 
-            "Prioritas": ["Pipeline RTW atau NTB", "Diluar Pipeline Prio", "Pipeline MDS/MDCI/RDPU"], 
-            "Pebisnis": ["Pipeline Data Leakage", "Pipeline GMM", "Leads Kopra", "Pipeline nasabah dari Area", "Kawasan Pebisnis", "Non Pipeline dan Non Kawasan"], 
-            "Individu": ["Pipeline Cakra", "Kawasan", "Non pipeline"] 
+            "Pipeline GMM Merchant Senator dari Livin": ["Pipeline GMM Merchant Senator dari Livin"],
+            "Pipeline New CIF Individu ke Pebisnis": ["Pipeline New CIF Individu ke Pebisnis"],
+            "Pipeline CC": ["Pipeline CC"],
+            "Pipeline Merchant": ["Pipeline Merchant"],
+            "Pipeline Pebisnis Non Payroll": ["Pipeline Pebisnis Non Payroll"],
+            "Winback Pareto Cabang": ["Winback Pareto Cabang"],
+            "Diluar Pipeline": ["Payroll", "Prioritas", "Pebisnis", "Individu"]
         } 
     },
     akuisisi: { 
@@ -25,9 +28,12 @@ const menuData = {
 };
 
 const configMap = {
+    "Payroll": { col1: "Nama PT", col2: "Jml Prospek", type2: "text" },
+    "Prioritas": { col1: "Nama Nasabah", col2: "CIF", col3: "Product Offering", type3: "select", options: ["RTW", "NTB", "MDS", "MDCI", "RDPU"] },
+    "Pebisnis": { col1: "Nama Nasabah", col2: "CIF", col3: "Product Offering", type3: "select", options: ["LVM", "EDC", "Kopra"] },
+    "Individu": { col1: "Nama Nasabah", col2: "CIF", col3: "Product Offering", type3: "select", options: ["LVM", "EDC", "Kopra"] },
     "Pipeline PMP": { col1: "Nama PT", col2: "Jml Prospek", type2: "text" },
     "Pipeline Badan Usaha": { col1: "Nama PT", col2: "Jml Prospek", type2: "text" },
-    "Diluar Pipeline": { col1: "Nama PT", col2: "Jml Prospek", type2: "text" },
     "Pipeline RTW atau NTB": { col1: "Nama Nasabah", col2: "CIF", col3: "Product Offering", type3: "select", options: ["RTW", "NTB"] },
     "Pipeline MDS/MDCI/RDPU": { col1: "Nama Nasabah", col2: "CIF", col3: "Product Offering", type3: "select", options: ["MDS", "MDCI", "RDPU"] },
     "Diluar Pipeline Prio": { col1: "Nama Nasabah", col2: "CIF", type2: "text" },
@@ -87,6 +93,59 @@ let merchantData = [];
 let newcifData = [];
 let ccData = [];
 let currentCCType = "";
+let gpData = [];
+let currentGPType = "";
+
+const genericPipelineConfig = {
+    merchant: { 
+        sheet: "Monitoring Pipeline Merchant", 
+        updateCols: [15, 16, 17, 18], 
+        title: "Pipeline Merchant", 
+        cabangCol: 1,
+        visitOptions: [
+            "Penambahan product (EDC/LVM/Kopra/Produk lainnya)",
+            "Isu Bisnis (MDR / Program)",
+            "Isu Teknis (Kendala mesin/Kendala QRIS/Kendala Kopra/Kendala teknis lainnya)",
+            "Belum bertemu owner/PIC, FU Kembali",
+            "Usaha tutup permanen/Tidak berkenan menggunakan produk BMRI"
+        ]
+    },
+    pebisnisnonpayroll: { 
+        sheet: "Monitoring Pipeline Pebisnis Non Payroll", 
+        updateCols: [5, 6, 7, 8], 
+        title: "Pipeline Pebisnis Non Payroll", 
+        cabangCol: 1,
+        visitOptions: [
+            "Berminat",
+            "Perlu Follow Up",
+            "Tidak Berminat"
+        ]
+    },
+    winbackpareto: { 
+        sheet: "Top 30 Pareto Cabang", 
+        updateCols: [27, 28, 29, 30], 
+        title: "Winback Pareto Cabang", 
+        cabangCol: 1,
+        visitOptions: [
+            "Berminat",
+            "Perlu Follow Up",
+            "Tidak Berminat"
+        ]
+    }
+};
+
+const pipelineSubMenus = {
+    "Pipeline GMM Merchant Senator dari Livin": function() { loadPipelineMerchant(); },
+    "Pipeline New CIF Individu ke Pebisnis": function() { loadPipelineNewCIF(); },
+    "Pipeline CC": function() {
+        goToPage('page-pipeline-cc');
+        document.getElementById('cc-sub-menu').style.display = 'block';
+        document.getElementById('cc-form').style.display = 'none';
+    },
+    "Pipeline Merchant": function() { loadPipelineGeneric('merchant'); },
+    "Pipeline Pebisnis Non Payroll": function() { loadPipelineGeneric('pebisnisnonpayroll'); },
+    "Winback Pareto Cabang": function() { loadPipelineGeneric('winbackpareto'); }
+};
 
 const ccConfig = {
     dropfund: { sheet: "LEADS CC NSBH DROP FUND", title: "Leads CC Nasabah Drop Fund" },
@@ -95,9 +154,6 @@ const ccConfig = {
     cakra:    { sheet: "LEADS CC CAKRA", title: "Leads CC Cakra" }
 };
 
-// ============================================================
-// QUEUE SYSTEM - ANTRIAN PENGAJUAN KE GOOGLE SHEETS
-// ============================================================
 let isSubmitting = false;
 let submissionQueue = [];
 let queueCounter = 0;
@@ -122,7 +178,7 @@ async function processQueue() {
 
     isSubmitting = true;
     const request = submissionQueue.shift();
-    const btn = document.getElementById('submit-btn') || document.getElementById('btn-submit-pipeline') || document.getElementById('btn-submit-newcif') || document.getElementById('btn-submit-cc');
+    const btn = document.getElementById('submit-btn') || document.getElementById('btn-submit-pipeline') || document.getElementById('btn-submit-newcif') || document.getElementById('btn-submit-cc') || document.getElementById('btn-submit-gp');
 
     try {
         console.log(`[Queue #${request.id}] Mengirim data...`);
@@ -134,14 +190,12 @@ async function processQueue() {
             body: JSON.stringify(request.payload)
         });
 
-        // Ambil respon sebagai teks terlebih dahulu
         const responseText = await response.text();
         let result;
 
         try {
             result = JSON.parse(responseText);
         } catch (jsonErr) {
-            // Jika Apps Script mengembalikan HTML (pengalihan), tapi HTTP 200, tetap anggap sukses
             if (response.ok && responseText.trim().startsWith('<')) {
                 console.warn(`[Queue #${request.id}] Response HTML diterima, dianggap sukses.`);
                 result = { success: true, message: "Data berhasil dikirim." };
@@ -176,9 +230,6 @@ async function processQueue() {
     }
 }
 
-// ============================================================
-// PAGE NAVIGATION & VALIDATION
-// ============================================================
 function goToPage(pageId) {
     document.querySelectorAll('section').forEach(s => s.style.display = 'none');
     const target = document.getElementById(pageId);
@@ -200,21 +251,6 @@ function validateStep1() {
 }
 
 function selectMainMenu(menu) {
-    if (menu === 'pipeline_merchant') {
-        loadPipelineMerchant();
-        return;
-    }
-    if (menu === 'pipeline_newcif') {
-        loadPipelineNewCIF();
-        return;
-    }
-    if (menu === 'pipeline_cc') {
-        goToPage('page-pipeline-cc');
-        document.getElementById('cc-sub-menu').style.display = 'block';
-        document.getElementById('cc-form').style.display = 'none';
-        return;
-    }
-
     if (!menuData[menu]) { alert("Konfigurasi belum tersedia."); return; }
     currentMenu = menu;
 
@@ -233,9 +269,6 @@ function submitNIP() {
     renderCategories('akuisisi');
 }
 
-// ============================================================
-// PIPELINE MERCHANT
-// ============================================================
 async function loadPipelineMerchant() {
     const kodeCabang = document.getElementById('branch-code').value.trim();
 
@@ -338,9 +371,6 @@ async function submitPipelineMerchant() {
     }
 }
 
-// ============================================================
-// PIPELINE NEW CIF
-// ============================================================
 async function loadPipelineNewCIF() {
     const kodeCabang = document.getElementById('branch-code').value.trim();
 
@@ -443,9 +473,130 @@ async function submitPipelineNewCIF() {
     }
 }
 
-// ============================================================
-// PIPELINE CC
-// ============================================================
+async function loadPipelineGeneric(type) {
+    if (!genericPipelineConfig[type]) { alert("Konfigurasi pipeline tidak ditemukan."); return; }
+    currentGPType = type;
+    const conf = genericPipelineConfig[type];
+    const kodeCabang = document.getElementById('branch-code').value.trim();
+
+    document.getElementById('gp-title').innerText = conf.title;
+
+    const resultSelect = document.getElementById('gp-visit-result');
+    resultSelect.innerHTML = '<option value="" disabled selected>-- Pilih Hasil Visit --</option>';
+    if (conf.visitOptions) {
+        conf.visitOptions.forEach(opt => {
+            const option = document.createElement('option');
+            option.value = opt;
+            option.textContent = opt;
+            resultSelect.appendChild(option);
+        });
+    }
+
+    goToPage('page-pipeline-generic');
+    document.getElementById('gp-loading').style.display = 'block';
+    document.getElementById('gp-content').style.display = 'none';
+    document.getElementById('gp-error').style.display = 'none';
+
+    try {
+        let gpUrl = webAppUrl + '?action=getPipelineData&sheet=' + encodeURIComponent(conf.sheet) + '&branchCode=' + encodeURIComponent(kodeCabang);
+        if (conf.cabangCol) gpUrl += '&cabangCol=' + conf.cabangCol;
+        const response = await fetch(gpUrl, {
+            method: "GET",
+            redirect: "follow"
+        });
+
+        const result = await response.json();
+
+        if (result.error) {
+            throw new Error(result.error);
+        }
+
+        gpData = result.data || [];
+
+        if (gpData.length === 0) {
+            document.getElementById('gp-loading').style.display = 'none';
+            document.getElementById('gp-error').innerHTML = 'Tidak ada data untuk cabang ' + kodeCabang;
+            document.getElementById('gp-error').style.display = 'block';
+            return;
+        }
+
+        const datalist = document.getElementById('gp-list');
+        datalist.innerHTML = '';
+
+        gpData.forEach(item => {
+            const option = document.createElement('option');
+            option.value = item.nama;
+            datalist.appendChild(option);
+        });
+
+        document.getElementById('gp-loading').style.display = 'none';
+        document.getElementById('gp-content').style.display = 'block';
+
+    } catch (err) {
+        console.error('Error loading pipeline data:', err);
+        document.getElementById('gp-loading').style.display = 'none';
+        document.getElementById('gp-error').innerHTML = 'Gagal memuat data. Error: ' + err.message;
+        document.getElementById('gp-error').style.display = 'block';
+    }
+}
+
+async function submitPipelineGeneric() {
+    if (!currentGPType || !genericPipelineConfig[currentGPType]) {
+        alert("Tipe pipeline tidak valid.");
+        return;
+    }
+    const conf = genericPipelineConfig[currentGPType];
+
+    const nama = document.getElementById('gp-input').value.trim();
+    const visitStatus = document.getElementById('gp-visit-status').value;
+    const visitDate = document.getElementById('gp-visit-date').value;
+    const visitResult = document.getElementById('gp-visit-result').value;
+    const keterangan = document.getElementById('gp-keterangan').value.trim();
+
+    if (!nama) {
+        alert("Pilih atau ketik Nama/CIF terlebih dahulu!");
+        return;
+    }
+
+    const isValid = gpData.some(item =>
+        item.nama.trim().toLowerCase() === nama.trim().toLowerCase()
+    );
+    if (!isValid) {
+        alert("Nama/CIF tidak ditemukan dalam list. Silakan pilih dari daftar yang tersedia.");
+        return;
+    }
+
+    if (!visitStatus) { alert("Pilih status Sudah Visit / Belum!"); return; }
+    if (!visitDate) { alert("Isi Tanggal Visit!"); return; }
+    if (!visitResult) { alert("Pilih Hasil Visit!"); return; }
+
+    const btn = document.getElementById('btn-submit-gp');
+    btn.innerText = "Mengirim...";
+    btn.disabled = true;
+
+    const payload = {
+        targetSheet: "Pipeline Generic",
+        sheetName: conf.sheet,
+        updateCols: conf.updateCols,
+        nama: nama,
+        visitStatus: visitStatus,
+        visitDate: visitDate,
+        visitResult: visitResult,
+        keterangan: keterangan
+    };
+
+    try {
+        const result = await addToQueue(payload);
+        alert("Sukses! Data " + conf.title + " telah dikirim.\n" + (result.data.message || ""));
+        resetForm();
+    } catch (err) {
+        const msg = (err && err.message) ? err.message : err;
+        alert("Kesalahan saat mengirim data: " + msg);
+        btn.innerText = "Submit Data";
+        btn.disabled = false;
+    }
+}
+
 function selectCCType(type) {
     if (!ccConfig[type]) { alert("Konfigurasi sub kategori CC tidak ditemukan."); return; }
     currentCCType = type;
@@ -470,6 +621,8 @@ function backToCCSubMenu() {
     document.getElementById('cc-error').style.display = 'none';
     ccData = [];
     currentCCType = "";
+    gpData = [];
+    currentGPType = "";
 }
 
 async function loadLeadsCC(type) {
@@ -568,9 +721,6 @@ async function submitPipelineCC() {
     }
 }
 
-// ============================================================
-// RENDER KATEGORI & FORM DINAMIS
-// ============================================================
 function renderCategories(menu) {
     const container = document.getElementById('category-options');
     document.getElementById('menu-title').innerText = menuData[menu].title;
@@ -580,7 +730,13 @@ function renderCategories(menu) {
         const btn = document.createElement('button'); 
         btn.className = 'cat-btn';
         btn.innerText = cat; 
-        btn.onclick = () => showSub(cat);
+        btn.onclick = () => {
+            if (pipelineSubMenus[cat]) {
+                pipelineSubMenus[cat]();
+            } else {
+                showSub(cat);
+            }
+        };
         container.appendChild(btn);
     });
     goToPage('page2');
@@ -598,6 +754,7 @@ function showSub(catName) {
         btn.className = 'cat-btn';
         btn.innerText = sub;
         btn.onclick = function() {
+            if (pipelineSubMenus[sub]) { pipelineSubMenus[sub](); return; }
             document.getElementById('question-label').innerText = `Input detail untuk: ${sub}`;
             dynamicArea.style.display = 'block';
             document.getElementById('text-inputs-container').innerHTML = "";
@@ -854,9 +1011,6 @@ async function submitFinalData() {
     }
 }
 
-// ============================================================
-// RESET & CHECK PASSWORD
-// ============================================================
 function resetForm() {
     document.getElementById('mon-date').value = '';
     document.getElementById('branch-code').value = '';
@@ -867,18 +1021,21 @@ function resetForm() {
     newcifData = [];
     ccData = [];
     currentCCType = "";
+    gpData = [];
+    currentGPType = "";
 
     const elIds = [
         'merchant-input', 'visit-status', 'visit-date', 'visit-result', 'keterangan-pipeline',
         'newcif-input', 'newcif-visit-status', 'newcif-visit-date', 'newcif-visit-result', 'newcif-keterangan',
-        'cc-input', 'cc-visit-status', 'cc-visit-date', 'cc-visit-result', 'cc-keterangan', 'follow-up-count'
+        'cc-input', 'cc-visit-status', 'cc-visit-date', 'cc-visit-result', 'cc-keterangan', 'follow-up-count',
+        'gp-input', 'gp-visit-status', 'gp-visit-date', 'gp-visit-result', 'gp-keterangan'
     ];
     elIds.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.value = '';
     });
 
-    const lists = ['merchant-list', 'newcif-list', 'cc-list', 'text-inputs-container'];
+    const lists = ['merchant-list', 'newcif-list', 'cc-list', 'gp-list', 'text-inputs-container'];
     lists.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.innerHTML = '';
@@ -896,7 +1053,7 @@ function resetForm() {
     const ccForm = document.getElementById('cc-form');
     if (ccForm) ccForm.style.display = 'none';
 
-    ['btn-submit-pipeline', 'btn-submit-newcif', 'btn-submit-cc', 'submit-btn'].forEach(id => {
+    ['btn-submit-pipeline', 'btn-submit-newcif', 'btn-submit-cc', 'btn-submit-gp', 'submit-btn'].forEach(id => {
         const btn = document.getElementById(id);
         if (btn) {
             btn.innerText = "Submit Data";

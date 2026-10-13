@@ -6,7 +6,6 @@
     <title>Data Monitoring & Akuisisi</title>
     <link rel="stylesheet" href="style.css">
     <base target="_blank">
-<base target="_blank">
 </head>
 <body>
     <div class="container">
@@ -33,7 +32,7 @@
                 <input type="text" id="nip-code" placeholder="NIP">
             </div>
             <button class="submit-btn" onclick="submitNIP()">Lanjut</button>
-            <button class="back-btn" onclick="goToPage('page-main-menu')">Kembali</button>
+            <button class="back-btn" onclick="goToPage('page1')">Kembali</button>
         </section>
 
         <section id="page-main-menu" style="display:none;">
@@ -41,9 +40,6 @@
             <div class="menu-grid">
                 <button class="menu-btn" onclick="selectMainMenu('monitoring')">Menu Monitoring</button>
                 <button class="menu-btn" onclick="selectMainMenu('akuisisi')">Menu Akuisisi</button>
-                <button class="menu-btn" onclick="selectMainMenu('pipeline_merchant')">Pipeline GMM Merchant Senator dari Livin</button>
-                <button class="menu-btn" onclick="selectMainMenu('pipeline_newcif')">Pipeline New CIF Individu ke Pebisnis</button>
-                <button class="menu-btn" onclick="selectMainMenu('pipeline_cc')">Pipeline CC</button>
             </div>
         </section>
 
@@ -98,7 +94,7 @@
                 <button id="btn-submit-pipeline" class="submit-btn" onclick="submitPipelineMerchant()">Submit Data</button>
             </div>
             <div id="pipeline-error" style="display:none; color:red; text-align:center; padding:15px;"></div>
-            <button class="back-btn" onclick="goToPage('page-main-menu')" style="margin-top:15px;">Kembali</button>
+            <button class="back-btn" onclick="goBackToCategories()" style="margin-top:15px;">Kembali</button>
         </section>
 
         <!-- PAGE PIPELINE NEW CIF -->
@@ -147,9 +143,52 @@
                 <button id="btn-submit-newcif" class="submit-btn" onclick="submitPipelineNewCIF()">Submit Data</button>
             </div>
             <div id="newcif-error" style="display:none; color:red; text-align:center; padding:15px;"></div>
-            <button class="back-btn" onclick="goToPage('page-main-menu')" style="margin-top:15px;">Kembali</button>
+            <button class="back-btn" onclick="goBackToCategories()" style="margin-top:15px;">Kembali</button>
         </section>
 
+        <!-- PAGE PIPELINE GENERIC (Merchant, Pebisnis Non Payroll, Winback Pareto Cabang) -->
+        <section id="page-pipeline-generic" style="display:none;">
+            <h2 id="gp-title">Pipeline</h2>
+            <div id="gp-loading" style="text-align:center; padding:20px; color:#666;">
+                <p>Memuat data...</p>
+            </div>
+            <div id="gp-content" style="display:none;">
+                <div class="input-group">
+                    <label>Pilih Nama / CIF</label>
+                    <input type="text" id="gp-input" list="gp-list" placeholder="Ketik atau pilih nama/CIF..." autocomplete="off" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; font-size:14px; box-sizing:border-box;">
+                    <datalist id="gp-list"></datalist>
+                </div>
+
+                <div class="input-group">
+                    <label>Sudah Visit / Belum</label>
+                    <select id="gp-visit-status" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; font-size:14px;">
+                        <option value="" disabled selected>-- Pilih Status Visit --</option>
+                        <option value="Sudah">Sudah</option>
+                        <option value="Belum">Belum</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label>Tanggal Visit</label>
+                    <input type="date" id="gp-visit-date" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; font-size:14px;">
+                </div>
+
+                <div class="input-group">
+                    <label>Hasil Visit</label>
+                    <select id="gp-visit-result" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; font-size:14px;">
+                        <option value="" disabled selected>-- Pilih Hasil Visit --</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label>Keterangan</label>
+                    <input type="text" id="gp-keterangan" placeholder="Masukkan keterangan">
+                </div>
+                <button id="btn-submit-gp" class="submit-btn" onclick="submitPipelineGeneric()">Submit Data</button>
+            </div>
+            <div id="gp-error" style="display:none; color:red; text-align:center; padding:15px;"></div>
+            <button class="back-btn" onclick="goBackToCategories()" style="margin-top:15px;">Kembali</button>
+        </section>
 
         <!-- PAGE PIPELINE CC -->
         <section id="page-pipeline-cc" style="display:none;">
@@ -213,13 +252,13 @@
                 <div id="cc-error" style="display:none; color:red; text-align:center; padding:15px;"></div>
                 <button class="back-btn" onclick="backToCCSubMenu()" style="margin-top:15px;">&larr; Ganti Sub Kategori</button>
             </div>
-            <button class="back-btn" onclick="goToPage('page-main-menu')" style="margin-top:15px;">Kembali</button>
+            <button class="back-btn" onclick="goBackToCategories()" style="margin-top:15px;">Kembali</button>
         </section>
 
         <section id="page2" style="display:none;">
             <h2 id="menu-title">Kategori</h2>
             <div id="category-options" class="menu-grid"></div>
-            <button class="back-btn" onclick="goToPage('page-main-menu')">Kembali</button>
+            <button class="back-btn" onclick="goToPage('page1')">Kembali</button>
         </section>
 
         <section id="page3" style="display:none;">
