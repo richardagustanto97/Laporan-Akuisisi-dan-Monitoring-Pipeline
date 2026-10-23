@@ -1,7 +1,6 @@
-
 const webAppUrl = "https://script.google.com/macros/s/AKfycbyoHwTD236vXOkdhVBIyM28G6fT0sv0G9vi15MOWxkc96EPe2VPao72KdCIChmaIyQA/exec";
 
-const MAX_ROWS_PER_SUBMIT = 50; // batas jumlah baris per pengiriman (cegah antrian sangat panjang)
+const MAX_ROWS_PER_SUBMIT = 50;
 
 const validCodes = ["11900", "11902", "11903", "11904", "11906", "11907", "11912", "11916", "11920", "11923", "11924", "11929", "11931", "11932", "11934", "11935", "11936", "11937"];
 
@@ -14,6 +13,7 @@ const menuData = {
             "Pipeline CC": ["Pipeline CC"],
             "Pipeline Merchant": ["Pipeline Merchant"],
             "Pipeline Pebisnis Non Payroll": ["Pipeline Pebisnis Non Payroll"],
+            "Pipeline Nasabah Senator": ["Pipeline Nasabah Senator"],
             "Winback Pareto Cabang": ["Winback Pareto Cabang"],
             "Diluar Pipeline": ["Payroll", "Prioritas", "Pebisnis", "Individu"]
         }
@@ -125,6 +125,17 @@ const genericPipelineConfig = {
             "Tidak Berminat"
         ]
     },
+    nasabahsenator: {
+        sheet: "Pipeline Nasabah Senator",
+        updateCols: [5, 6, 7, 8],
+        title: "Pipeline Nasabah Senator",
+        cabangCol: 1,
+        visitOptions: [
+            "Berminat",
+            "Perlu Follow Up",
+            "Tidak Berminat"
+        ]
+    },
     winbackpareto: {
         sheet: "Top 30 Pareto Cabang",
         updateCols: [27, 28, 29, 30],
@@ -148,6 +159,7 @@ const pipelineSubMenus = {
     },
     "Pipeline Merchant": function() { loadPipelineGeneric('merchant'); },
     "Pipeline Pebisnis Non Payroll": function() { loadPipelineGeneric('pebisnisnonpayroll'); },
+    "Pipeline Nasabah Senator": function() { loadPipelineGeneric('nasabahsenator'); },
     "Winback Pareto Cabang": function() { loadPipelineGeneric('winbackpareto'); }
 };
 
@@ -159,11 +171,7 @@ const ccConfig = {
 };
 
 // ============================================================
-// SISTEM ANTRIAN (diperbaiki)
-// - Setiap request membawa referensi tombolnya sendiri.
-// - Jika satu pengiriman gagal, antrian BERHENTI (halt) dan semua
-//   request yang masih mengantar ditolak dengan pesan jelas,
-//   sehingga tidak ada "setengah terkirim diam-diam".
+// SISTEM ANTRIAN
 // ============================================================
 let isSubmitting = false;
 let queueHalted = false;
@@ -171,7 +179,6 @@ let submissionQueue = [];
 let queueCounter = 0;
 
 async function addToQueue(payload, btn) {
-    // antrian baru -> reset flag halt
     if (!isSubmitting && submissionQueue.length === 0) {
         queueHalted = false;
     }
@@ -234,14 +241,12 @@ async function processQueue() {
 
     } catch (err) {
         console.error(`[Queue #${request.id}] Gagal:`, err);
-        // hentikan seluruh antrian agar tidak ada pengiriman "diam-diam" setelah error
         haltQueue("Pengiriman dihentikan karena ada data yang gagal. Periksa koneksi/server, lalu kirim ulang data yang tersisa.");
         request.reject(err);
     } finally {
         await new Promise(r => setTimeout(r, 800));
         isSubmitting = false;
 
-        // pulihkan TOMBOL MILIK REQUEST INI (bukan tombol lain yang kebetulan ada di DOM)
         if (request.btn) {
             request.btn.innerText = "Submit Data";
             request.btn.disabled = false;
@@ -285,8 +290,6 @@ function resetSubmitButtons() {
     });
 }
 
-// cari item berdasarkan nama (case-insensitive), kembalikan object lengkap
-// (termasuk row/rowIndex bila disediakan backend)
 function findMatchedItem(data, name) {
     const target = name.trim().toLowerCase();
     return data.find(item => item.nama.trim().toLowerCase() === target) || null;
@@ -415,7 +418,6 @@ async function submitPipelineMerchant() {
         tanggal: tanggal,
         kodeCabang: kodeCabang,
         namaMerchant: matched.nama,
-        // jika backend mengirimkan nomor baris, gunakan untuk update agar tidak salah baris pada nama duplikat
         rowIndex: matched.row || matched.rowIndex || null,
         visitStatus: visitStatus,
         visitDate: visitDate,
@@ -426,11 +428,10 @@ async function submitPipelineMerchant() {
     try {
         const result = await addToQueue(payload, btn);
         alert("Sukses! Data Pipeline Merchant telah dikirim.\n" + (result.data.message || ""));
-        clearMerchantForm(); // tetap di halaman, kode cabang & tanggal tidak dihapus
+        clearMerchantForm();
     } catch (err) {
         const msg = (err && err.message) ? err.message : err;
         alert("Kesalahan saat mengirim data: " + msg);
-        // tombol dipulihkan oleh processQueue / addToQueue
     }
 }
 
@@ -542,7 +543,7 @@ async function submitPipelineNewCIF() {
 }
 
 // ============================================================
-// PIPELINE GENERIC (Merchant / Pebisnis Non Payroll / Winback)
+// PIPELINE GENERIC (Merchant / Pebisnis Non Payroll / Nasabah Senator / Winback)
 // ============================================================
 async function loadPipelineGeneric(type) {
     if (!genericPipelineConfig[type]) { alert("Konfigurasi pipeline tidak ditemukan."); return; }
@@ -858,7 +859,6 @@ function generateTextInputs() {
 
     if (isNaN(count) || count <= 0) return;
 
-    // batasi jumlah baris agar antrian tidak terlalu panjang
     if (count > MAX_ROWS_PER_SUBMIT) {
         alert(`Maksimal ${MAX_ROWS_PER_SUBMIT} baris per pengiriman. Jumlah diturunkan otomatis.`);
         count = MAX_ROWS_PER_SUBMIT;
@@ -1076,9 +1076,6 @@ async function submitFinalData() {
     const btn = document.getElementById('submit-btn');
     setBtnLoading(btn);
 
-    // Kirim satu per satu. Baris yang SUDAH terkirim dihapus dari DOM,
-    // sehingga jika terjadi gagal di tengah, baris yang belum terkirim
-    // tetap tampil dan bisa dikirim ulang TANPA duplikat.
     let successCount = 0;
     for (let i = 0; i < dataToSubmit.length; i++) {
         try {
@@ -1096,7 +1093,7 @@ async function submitFinalData() {
                 `Data ke-${i + 1} gagal: ${msg}\n\n` +
                 "Baris yang belum terkirim tetap ditampilkan. Periksa data lalu kirim ulang."
             );
-            return; // baris sisanya tetap di DOM
+            return;
         }
     }
 
@@ -1104,8 +1101,6 @@ async function submitFinalData() {
     resetDynamicForm();
 }
 
-// bersihkan form dinamis dan kembali ke daftar kategori
-// (kode cabang, tanggal, dan NIP TETAP terisi)
 function resetDynamicForm() {
     document.getElementById('text-inputs-container').innerHTML = "";
     document.getElementById('follow-up-count').value = "";
@@ -1127,7 +1122,6 @@ function resetDynamicForm() {
 // RESET PENUH (kembali ke halaman awal)
 // ============================================================
 function resetForm() {
-    // batalkan antrian yang masih tertunda
     if (submissionQueue.length > 0) {
         haltQueue("Pengiriman dibatalkan (form direset).");
     }
@@ -1179,9 +1173,6 @@ function resetForm() {
 // ============================================================
 // LAIN-LAIN
 // ============================================================
-// CATATAN KEAMANAN: password di bawah hanya gerbang kasual.
-// Password dan URL sheet tetap terlihat di source halaman.
-// Jangan mengandalkan ini untuk melindungi data sensitif.
 function checkPassword() {
     const password = prompt("Masukkan Password untuk akses database:");
     if (password === "Gambir119") {
