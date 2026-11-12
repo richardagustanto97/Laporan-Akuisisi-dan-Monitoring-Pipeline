@@ -875,6 +875,8 @@ function updateColor(selectElement) {
     else if (selectElement.value === "Tidak berminat") selectElement.classList.add('bg-tidak');
 }
 
+// Sub kategori akuisisi yang tidak memakai input Kawasan
+const NO_KAWASAN_SUBS = ["Livin"];
 const KAWASAN_OPTIONS = ["Pasbar", "Mangga Dua", "Kemayoran", "Serbu Sekolah", "Inacraft", "No"];
 const STATUS_OPTIONS = ["Berminat", "Tidak berminat", "Follow up"];
 
@@ -925,7 +927,7 @@ function generateTextInputs() {
         html += buildOptionalField(4, config.col4, config.type4, config.options, config.hideCol4);
         html += buildOptionalField(5, config.col5, config.type5, config.options, config.hideCol5);
 
-        if (currentMenu === 'akuisisi') {
+        if (currentMenu === 'akuisisi' && !NO_KAWASAN_SUBS.includes(selectedSub)) {
             html += `<select class="number-input-small col-kawasan" style="padding: 10px 4px; font-size: 12px;">
                         <option value="" disabled selected>Pilih Kawasan</option>
                         ${optionsHtml(KAWASAN_OPTIONS)}
@@ -1030,7 +1032,7 @@ async function submitFinalData() {
             return;
         }
 
-        if (currentMenu === 'akuisisi' && kawasanValue === "") {
+        if (currentMenu === 'akuisisi' && !NO_KAWASAN_SUBS.includes(subKategori) && kawasanValue === "") {
             alert(`Baris ${rowNum}: Kawasan harus dipilih.`);
             return;
         }
