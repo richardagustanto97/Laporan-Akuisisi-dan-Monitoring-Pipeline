@@ -174,11 +174,31 @@ const ccConfig = {
 // SISTEM ANTRIAN
 // ============================================================
 let isSubmitting = false;
+let isFormBusy = false; // true selama submitFinalData berjalan (mencegah klik ganda)
 let queueHalted = false;
 let submissionQueue = [];
 let queueCounter = 0;
 
+const pendingRequestIds = {};
+
+function getRequestId(key) {
+    if (!pendingRequestIds[key]) {
+        pendingRequestIds[key] = (window.crypto && crypto.randomUUID)
+            ? crypto.randomUUID()
+            : Date.now() + "-" + Math.random().toString(36).slice(2);
+    }
+    return pendingRequestIds[key];
+}
+
+function clearRequestId(key) {
+    delete pendingRequestIds[key];
+}
+
 async function addToQueue(payload, btn) {
+    // requestId sama dipakai ulang bila data identik dikirim ulang setelah gagal,
+    // sehingga server bisa mengenali & menolak duplikat.
+    const idKey = JSON.stringify(payload);
+    payload.requestId = getRequestId(idKey);
     if (!isSubmitting && submissionQueue.length === 0) {
         queueHalted = false;
     }
@@ -188,7 +208,7 @@ async function addToQueue(payload, btn) {
             id: queueCounter,
             payload: payload,
             btn: btn || null,
-            resolve: resolve,
+            resolve: (res) => { clearRequestId(idKey); resolve(res); },
             reject: reject
         });
         processQueue();
@@ -247,11 +267,6 @@ async function processQueue() {
         await new Promise(r => setTimeout(r, 800));
         isSubmitting = false;
 
-        if (request.btn) {
-            request.btn.innerText = "Submit Data";
-            request.btn.disabled = false;
-        }
-
         if (!queueHalted && submissionQueue.length > 0) {
             processQueue();
         }
@@ -273,6 +288,12 @@ function setBtnLoading(btn) {
     btn.disabled = true;
 }
 
+function resetBtn(btn) {
+    if (!btn) return;
+    btn.innerText = "Submit Data";
+    btn.disabled = false;
+}
+
 function clearFields(ids) {
     ids.forEach(id => {
         const el = document.getElementById(id);
@@ -292,7 +313,7 @@ function resetSubmitButtons() {
 
 function findMatchedItem(data, name) {
     const target = name.trim().toLowerCase();
-    return data.find(item => item.nama.trim().toLowerCase() === target) || null;
+    return data.find(item => String(item.nama).trim().toLowerCase() === target) || null;
 }
 
 function validateStep1() {
@@ -355,7 +376,7 @@ async function loadPipelineMerchant() {
 
         if (merchantData.length === 0) {
             document.getElementById('pipeline-loading').style.display = 'none';
-            document.getElementById('pipeline-error').innerHTML = 'Tidak ada data merchant untuk cabang ' + kodeCabang;
+            document.getElementById('pipeline-error').textContent = 'Tidak ada data merchant untuk cabang ' + kodeCabang;
             document.getElementById('pipeline-error').style.display = 'block';
             return;
         }
@@ -375,7 +396,7 @@ async function loadPipelineMerchant() {
     } catch (err) {
         console.error('Error loading merchant data:', err);
         document.getElementById('pipeline-loading').style.display = 'none';
-        document.getElementById('pipeline-error').innerHTML = 'Gagal memuat data merchant. Error: ' + err.message;
+        document.getElementById('pipeline-error').textContent = 'Gagal memuat data merchant. Error: ' + err.message;
         document.getElementById('pipeline-error').style.display = 'block';
     }
 }
@@ -431,6 +452,7 @@ async function submitPipelineMerchant() {
         clearMerchantForm();
     } catch (err) {
         const msg = (err && err.message) ? err.message : err;
+        resetBtn(btn);
         alert("Kesalahan saat mengirim data: " + msg);
     }
 }
@@ -462,7 +484,7 @@ async function loadPipelineNewCIF() {
 
         if (newcifData.length === 0) {
             document.getElementById('newcif-loading').style.display = 'none';
-            document.getElementById('newcif-error').innerHTML = 'Tidak ada data New CIF untuk cabang ' + kodeCabang;
+            document.getElementById('newcif-error').textContent = 'Tidak ada data New CIF untuk cabang ' + kodeCabang;
             document.getElementById('newcif-error').style.display = 'block';
             return;
         }
@@ -482,7 +504,7 @@ async function loadPipelineNewCIF() {
     } catch (err) {
         console.error('Error loading New CIF data:', err);
         document.getElementById('newcif-loading').style.display = 'none';
-        document.getElementById('newcif-error').innerHTML = 'Gagal memuat data New CIF. Error: ' + err.message;
+        document.getElementById('newcif-error').textContent = 'Gagal memuat data New CIF. Error: ' + err.message;
         document.getElementById('newcif-error').style.display = 'block';
     }
 }
@@ -538,6 +560,7 @@ async function submitPipelineNewCIF() {
         clearNewCIFForm();
     } catch (err) {
         const msg = (err && err.message) ? err.message : err;
+        resetBtn(btn);
         alert("Kesalahan saat mengirim data: " + msg);
     }
 }
@@ -587,7 +610,7 @@ async function loadPipelineGeneric(type) {
 
         if (gpData.length === 0) {
             document.getElementById('gp-loading').style.display = 'none';
-            document.getElementById('gp-error').innerHTML = 'Tidak ada data untuk cabang ' + kodeCabang;
+            document.getElementById('gp-error').textContent = 'Tidak ada data untuk cabang ' + kodeCabang;
             document.getElementById('gp-error').style.display = 'block';
             return;
         }
@@ -607,7 +630,7 @@ async function loadPipelineGeneric(type) {
     } catch (err) {
         console.error('Error loading pipeline data:', err);
         document.getElementById('gp-loading').style.display = 'none';
-        document.getElementById('gp-error').innerHTML = 'Gagal memuat data. Error: ' + err.message;
+        document.getElementById('gp-error').textContent = 'Gagal memuat data. Error: ' + err.message;
         document.getElementById('gp-error').style.display = 'block';
     }
 }
@@ -667,6 +690,7 @@ async function submitPipelineGeneric() {
         clearGenericPipelineForm();
     } catch (err) {
         const msg = (err && err.message) ? err.message : err;
+        resetBtn(btn);
         alert("Kesalahan saat mengirim data: " + msg);
     }
 }
@@ -723,7 +747,7 @@ async function loadLeadsCC(type) {
 
         if (ccData.length === 0) {
             document.getElementById('cc-loading').style.display = 'none';
-            document.getElementById('cc-error').innerHTML = 'Tidak ada data di sheet "' + ccConfig[type].sheet + '"';
+            document.getElementById('cc-error').textContent = 'Tidak ada data di sheet "' + ccConfig[type].sheet + '"';
             document.getElementById('cc-error').style.display = 'block';
             return;
         }
@@ -743,7 +767,7 @@ async function loadLeadsCC(type) {
     } catch (err) {
         console.error('Error loading Leads CC data:', err);
         document.getElementById('cc-loading').style.display = 'none';
-        document.getElementById('cc-error').innerHTML = 'Gagal memuat data Leads CC. Error: ' + err.message;
+        document.getElementById('cc-error').textContent = 'Gagal memuat data Leads CC. Error: ' + err.message;
         document.getElementById('cc-error').style.display = 'block';
     }
 }
@@ -790,6 +814,7 @@ async function submitPipelineCC() {
         clearCCForm();
     } catch (err) {
         const msg = (err && err.message) ? err.message : err;
+        resetBtn(btn);
         alert("Kesalahan saat mengirim data: " + msg);
     }
 }
@@ -850,6 +875,25 @@ function updateColor(selectElement) {
     else if (selectElement.value === "Tidak berminat") selectElement.classList.add('bg-tidak');
 }
 
+const KAWASAN_OPTIONS = ["Pasbar", "Mangga Dua", "Kemayoran", "Serbu Sekolah", "Inacraft", "No"];
+const STATUS_OPTIONS = ["Berminat", "Tidak berminat", "Follow up"];
+
+const optionsHtml = list => list.map(opt => `<option value="${opt}">${opt}</option>`).join('');
+
+// Membuat kolom ke-2..5 (hidden / select / text) sesuai konfigurasi
+function buildOptionalField(slot, label, type, options, hidden) {
+    const cls = `number-input-small col-${slot}`;
+    if (hidden) return `<input type="hidden" class="${cls}" value="">`;
+    if (!label) return "";
+    if (type === "select") {
+        return `<select class="${cls}" style="padding: 10px;">
+                    <option value="" disabled selected>${label}</option>
+                    ${optionsHtml(options)}
+                </select>`;
+    }
+    return `<input type="text" placeholder="${label}" class="${cls}" style="padding: 10px;">`;
+}
+
 function generateTextInputs() {
     const countInput = document.getElementById('follow-up-count');
     let count = parseInt(countInput.value);
@@ -872,86 +916,27 @@ function generateTextInputs() {
         row.className = "input-row";
         row.style.marginBottom = "15px";
 
-        let html = "";
+        let html = config.hideCol1
+            ? `<input type="hidden" class="dynamic-text-input col-main" value="">`
+            : `<input type="text" placeholder="${i}. ${config.col1}" class="dynamic-text-input col-main" style="padding: 10px;">`;
 
-        if (config.hideCol1) {
-            html += `<input type="hidden" class="dynamic-text-input col-main" value="">`;
-        } else {
-            html += `<input type="text" placeholder="${i}. ${config.col1}" class="dynamic-text-input col-main" style="flex: 3; min-width: 0; padding: 10px;">`;
-        }
-
-        if (config.hideCol2) {
-            html += `<input type="hidden" class="number-input-small col-2" value="">`;
-        } else if (config.col2) {
-            if (config.type2 === "select") {
-                html += `<select class="number-input-small col-2" style="flex: 2; min-width: 0; padding: 10px;">
-                            <option value="" disabled selected>${config.col2}</option>
-                            ${config.options.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
-                         </select>`;
-            } else {
-                html += `<input type="text" placeholder="${config.col2}" class="number-input-small col-2" style="flex: 2; min-width: 0; padding: 10px;">`;
-            }
-        }
-
-        if (config.hideCol3) {
-            html += `<input type="hidden" class="number-input-small col-3" value="">`;
-        } else if (config.col3) {
-            if (config.type3 === "select") {
-                html += `<select class="number-input-small col-3" style="flex: 2; min-width: 0; padding: 10px;">
-                            <option value="" disabled selected>${config.col3}</option>
-                            ${config.options.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
-                         </select>`;
-            } else {
-                html += `<input type="text" placeholder="${config.col3}" class="number-input-small col-3" style="flex: 2; min-width: 0; padding: 10px;">`;
-            }
-        }
-
-        if (config.hideCol4) {
-            html += `<input type="hidden" class="number-input-small col-4" value="">`;
-        } else if (config.col4) {
-            if (config.type4 === "select") {
-                html += `<select class="number-input-small col-4" style="flex: 2; min-width: 0; padding: 10px;">
-                            <option value="" disabled selected>${config.col4}</option>
-                            ${config.options.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
-                         </select>`;
-            } else {
-                html += `<input type="text" placeholder="${config.col4}" class="number-input-small col-4" style="flex: 2; min-width: 0; padding: 10px;">`;
-            }
-        }
-
-        if (config.hideCol5) {
-            html += `<input type="hidden" class="number-input-small col-5" value="">`;
-        } else if (config.col5) {
-            if (config.type5 === "select") {
-                html += `<select class="number-input-small col-5" style="flex: 2; min-width: 0; padding: 10px;">
-                            <option value="" disabled selected>${config.col5}</option>
-                            ${config.options.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
-                         </select>`;
-            } else {
-                html += `<input type="text" placeholder="${config.col5}" class="number-input-small col-5" style="flex: 2; min-width: 0; padding: 10px;">`;
-            }
-        }
+        html += buildOptionalField(2, config.col2, config.type2, config.options, config.hideCol2);
+        html += buildOptionalField(3, config.col3, config.type3, config.options, config.hideCol3);
+        html += buildOptionalField(4, config.col4, config.type4, config.options, config.hideCol4);
+        html += buildOptionalField(5, config.col5, config.type5, config.options, config.hideCol5);
 
         if (currentMenu === 'akuisisi') {
-            html += `<select class="number-input-small col-kawasan" style="flex: 3; min-width: 0; padding: 10px 4px; font-size: 12px;">
+            html += `<select class="number-input-small col-kawasan" style="padding: 10px 4px; font-size: 12px;">
                         <option value="" disabled selected>Pilih Kawasan</option>
-                        <option value="Pasbar">Pasbar</option>
-                        <option value="Mangga Dua">Mangga Dua</option>
-                        <option value="Kemayoran">Kemayoran</option>
-                        <option value="Serbu Sekolah">Serbu Sekolah</option>
-                        <option value="Inacraft">Inacraft</option>
-                        <option value="No">No</option>
+                        ${optionsHtml(KAWASAN_OPTIONS)}
                     </select>`;
         }
 
         if (currentMenu === 'monitoring') {
-            html += `
-            <select class="status-select col-status" onchange="updateColor(this)" style="flex: 2; min-width: 0; padding: 10px;">
-                <option value="" disabled selected>Status</option>
-                <option value="Berminat">Berminat</option>
-                <option value="Tidak berminat">Tidak berminat</option>
-                <option value="Follow up">Follow up</option>
-            </select>`;
+            html += `<select class="status-select col-status" onchange="updateColor(this)" style="padding: 10px;">
+                        <option value="" disabled selected>Status</option>
+                        ${optionsHtml(STATUS_OPTIONS)}
+                    </select>`;
         }
 
         row.innerHTML = html;
@@ -963,6 +948,8 @@ function generateTextInputs() {
 // SUBMIT FORM DINAMIS (Monitoring / Akuisisi)
 // ============================================================
 async function submitFinalData() {
+    if (isFormBusy) return;
+
     const tanggal = document.getElementById('mon-date').value;
     const kodeCabang = document.getElementById('branch-code').value;
     const nip = currentNIP;
@@ -1074,27 +1061,33 @@ async function submitFinalData() {
     }
 
     const btn = document.getElementById('submit-btn');
+    isFormBusy = true;
     setBtnLoading(btn);
 
     let successCount = 0;
-    for (let i = 0; i < dataToSubmit.length; i++) {
-        try {
-            await addToQueue(dataToSubmit[i], btn);
-            successCount++;
-            const rowEl = rows[i];
-            if (rowEl && rowEl.parentNode) {
-                rowEl.parentNode.removeChild(rowEl);
+    try {
+        for (let i = 0; i < dataToSubmit.length; i++) {
+            try {
+                await addToQueue(dataToSubmit[i], btn);
+                successCount++;
+                const rowEl = rows[i];
+                if (rowEl && rowEl.parentNode) {
+                    rowEl.parentNode.removeChild(rowEl);
+                }
+            } catch (err) {
+                const msg = (err && err.message) ? err.message : err;
+                alert(
+                    "Pengiriman dihentikan.\n" +
+                    `${successCount} data berhasil dikirim.\n` +
+                    `Data ke-${i + 1} gagal: ${msg}\n\n` +
+                    "Baris yang belum terkirim tetap ditampilkan. Periksa data lalu kirim ulang."
+                );
+                return;
             }
-        } catch (err) {
-            const msg = (err && err.message) ? err.message : err;
-            alert(
-                "Pengiriman dihentikan.\n" +
-                `${successCount} data berhasil dikirim.\n` +
-                `Data ke-${i + 1} gagal: ${msg}\n\n` +
-                "Baris yang belum terkirim tetap ditampilkan. Periksa data lalu kirim ulang."
-            );
-            return;
         }
+    } finally {
+        isFormBusy = false;
+        resetBtn(btn);
     }
 
     alert(`Sukses! ${successCount} data berhasil dikirim ke sheet: ${destinationSheet}`);
@@ -1184,5 +1177,9 @@ function checkPassword() {
 }
 
 function goBackToCategories() {
+    if (isFormBusy) {
+        alert("Pengiriman data sedang berlangsung. Mohon tunggu hingga selesai.");
+        return;
+    }
     goToPage('page2');
 }
