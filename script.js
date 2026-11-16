@@ -877,7 +877,7 @@ function updateColor(selectElement) {
 
 // Sub kategori akuisisi yang tidak memakai input Kawasan
 const NO_KAWASAN_SUBS = ["Livin"];
-const KAWASAN_OPTIONS = ["Pasbar", "Mangga Dua", "Kemayoran", "Serbu Sekolah", "Inacraft", "No"];
+const KAWASAN_OPTIONS = ["Pasbar", "Mangga Dua", "Kemayoran", "Serbu Sekolah", "Lippo Mall", "No"];
 const STATUS_OPTIONS = ["Berminat", "Tidak berminat", "Follow up"];
 
 const optionsHtml = list => list.map(opt => `<option value="${opt}">${opt}</option>`).join('');
