@@ -27,6 +27,12 @@ const menuData = {
             "Akuisisi Individu": ["GMM", "Livin", "Simpel", "Tab Reguler", "Multicurrency", "MTR", "MTR Emas" ,"Tab Now non GMM","Livin Next Gen","Tabungan Emas","Incoming CC"],
             "Akuisisi MTBI & AXA": ["MTBI", "AXA"]
         }
+    },
+    aktivasi: {
+        title: "Menu Aktivasi",
+        categories: {
+            "Aktivasi": ["LVM", "EDC", "Kopra", "Livin"]
+        }
     }
 };
 
@@ -90,6 +96,27 @@ const configMap = {
     "MTBI": { col1: "Nomor Rekening", col2: "NIK", type2: "text", hideCol2: true, col3: "Nama Nasabah", type3: "text", hideCol3: true, col4: "Jenis Nasabah", type4: "select", options: ["Individu", "Badan Usaha","Payroll","Prioritas"] },
     "AXA": { col1: "Nomor CIF", col2: "NIK", type2: "text", hideCol2: true, col3: "Nama Nasabah", type3: "text", hideCol3: true, col4: "Jenis Nasabah", type4: "select", options: ["Individu", "Badan Usaha","Payroll","Prioritas"], col5: "FBI", type5: "text" }
 };
+
+// Konfigurasi form Menu Aktivasi.
+// Penempatan kolom sama seperti Akuisisi Pebisnis EDC/LVM:
+// fields = [slot1 (kosong), slot2 (nama), slot3 (nomor), slot4, slot5]
+const aktivasiConfigMap = {
+    "LVM":   { col1: "NIK", type1: "text", hideCol1: true, col2: "Nama Merchant", type2: "text", col3: "Nomor Rekening", type3: "text" },
+    "EDC":   { col1: "NIK", type1: "text", hideCol1: true, col2: "Nama Merchant", type2: "text", col3: "Nomor Rekening", type3: "text" },
+    "Kopra": { col1: "NIK", type1: "text", hideCol1: true, col2: "Nama Perusahaan/Badan", type2: "text", col3: "Nomor CIF", type3: "text" },
+    "Livin": { col1: "NIK", type1: "text", hideCol1: true, col2: "Nama", type2: "text", col3: "Nomor CIF", type3: "text" }
+};
+
+function getFormConfig(sub) {
+    if (currentMenu === 'aktivasi') return aktivasiConfigMap[sub] || {};
+    return configMap[sub];
+}
+
+// Kawasan wajib diisi di Akuisisi (kecuali Livin) dan di semua form Aktivasi
+function needsKawasan(sub) {
+    if (currentMenu === 'aktivasi') return true;
+    return currentMenu === 'akuisisi' && !NO_KAWASAN_SUBS.includes(sub);
+}
 
 let currentMenu = "";
 let currentNIP = "";
@@ -334,7 +361,7 @@ function selectMainMenu(menu) {
     if (!menuData[menu]) { alert("Konfigurasi belum tersedia."); return; }
     currentMenu = menu;
 
-    if (menu === 'akuisisi') {
+    if (menu === 'akuisisi' || menu === 'aktivasi') {
         goToPage('page-nip');
     } else {
         renderCategories(menu);
@@ -346,7 +373,11 @@ function submitNIP() {
     if (!nipInput) { alert("NIP harus diisi!"); return; }
 
     currentNIP = nipInput;
-    renderCategories('akuisisi');
+    if (currentMenu === 'aktivasi') {
+        showSub('Aktivasi');   // langsung ke pilihan LVM / EDC / Kopra / Livin
+    } else {
+        renderCategories('akuisisi');
+    }
 }
 
 // ============================================================
@@ -911,7 +942,7 @@ function generateTextInputs() {
         countInput.value = count;
     }
 
-    const config = configMap[selectedSub] || { col1: "Nama", col2: "Keterangan", type2: "text" };
+    const config = getFormConfig(selectedSub) || { col1: "Nama", col2: "Keterangan", type2: "text" };
 
     for (let i = 1; i <= count; i++) {
         const row = document.createElement('div');
@@ -927,7 +958,7 @@ function generateTextInputs() {
         html += buildOptionalField(4, config.col4, config.type4, config.options, config.hideCol4);
         html += buildOptionalField(5, config.col5, config.type5, config.options, config.hideCol5);
 
-        if (currentMenu === 'akuisisi' && !NO_KAWASAN_SUBS.includes(selectedSub)) {
+        if (needsKawasan(selectedSub)) {
             html += `<select class="number-input-small col-kawasan" style="padding: 10px 4px; font-size: 12px;">
                         <option value="" disabled selected>Pilih Kawasan</option>
                         ${optionsHtml(KAWASAN_OPTIONS)}
@@ -971,6 +1002,8 @@ async function submitFinalData() {
         else if (kategori.includes("Pebisnis")) destinationSheet = "Penginputan Pipeline Pebisnis";
         else if (kategori.includes("Individu")) destinationSheet = "Penginputan Pipeline Individu";
         else destinationSheet = "Data Monitoring";
+    } else if (currentMenu === 'aktivasi') {
+        destinationSheet = "Aktivasi";
     } else if (currentMenu === 'akuisisi') {
         if (kategori === "Akuisisi Payroll") destinationSheet = "Akuisisi Payroll";
         else if (kategori === "Akuisisi Prioritas") destinationSheet = "Akuisisi Prio";
@@ -986,7 +1019,7 @@ async function submitFinalData() {
     }
 
     let dataToSubmit = [];
-    const config = configMap[subKategori] || {};
+    const config = getFormConfig(subKategori) || {};
 
     for (let i = 0; i < rows.length; i++) {
         const row = rows[i];
@@ -1032,7 +1065,7 @@ async function submitFinalData() {
             return;
         }
 
-        if (currentMenu === 'akuisisi' && !NO_KAWASAN_SUBS.includes(subKategori) && kawasanValue === "") {
+        if (needsKawasan(subKategori) && kawasanValue === "") {
             alert(`Baris ${rowNum}: Kawasan harus dipilih.`);
             return;
         }
@@ -1049,7 +1082,7 @@ async function submitFinalData() {
             status: statusVal
         };
 
-        if (currentMenu === 'akuisisi') {
+        if (currentMenu === 'akuisisi' || currentMenu === 'aktivasi') {
             payload.fields = [val1, val2, val3, val4, val5];
         } else {
             payload.namaNasabah = val1;
@@ -1110,7 +1143,8 @@ function resetDynamicForm() {
     const btn = document.getElementById('submit-btn');
     if (btn) { btn.innerText = "Submit Data"; btn.disabled = false; }
 
-    goToPage('page2');
+    if (currentMenu === 'aktivasi') showSub('Aktivasi');
+    else goToPage('page2');
 }
 
 // ============================================================
@@ -1183,5 +1217,5 @@ function goBackToCategories() {
         alert("Pengiriman data sedang berlangsung. Mohon tunggu hingga selesai.");
         return;
     }
-    goToPage('page2');
+    goToPage(currentMenu === 'aktivasi' ? 'page-main-menu' : 'page2');
 }
