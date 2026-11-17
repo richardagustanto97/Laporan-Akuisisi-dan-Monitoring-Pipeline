@@ -1,4 +1,4 @@
-const webAppUrl = "https://script.google.com/macros/s/AKfycbyoHwTD236vXOkdhVBIyM28G6fT0sv0G9vi15MOWxkc96EPe2VPao72KdCIChmaIyQA/exec";
+const webAppUrl = "https://script.google.com/macros/s/AKfycbwXZ0HJ9Xon2o1deiqC6hWbEfq_YgfGWCUXytDEgI9VnvNn2BATKXovyhhkeMG4HYLC/exec";
 
 const MAX_ROWS_PER_SUBMIT = 50;
 
@@ -12,6 +12,7 @@ const menuData = {
             "Pipeline New CIF Individu ke Pebisnis": ["Pipeline New CIF Individu ke Pebisnis"],
             "Pipeline CC": ["Pipeline CC"],
             "Pipeline Merchant": ["Pipeline Merchant"],
+            "Pipeline Merchant Senator": ["Pipeline Merchant Senator"],
             "Pipeline Pebisnis Non Payroll": ["Pipeline Pebisnis Non Payroll"],
             "Pipeline Nasabah Senator": ["Pipeline Nasabah Senator"],
             "Winback Pareto Cabang": ["Winback Pareto Cabang"],
@@ -141,6 +142,24 @@ const genericPipelineConfig = {
             "Usaha tutup permanen/Tidak berkenan menggunakan produk BMRI"
         ]
     },
+    merchantsenator: {
+        sheet: "Pipeline Merchant Senator",
+        // updateCols = [Sudah Visit, Tanggal Visit, Hasil Visit, Keterangan] (nomor kolom, mulai dari 1)
+        // extraCols  = [MID, Nomor Rekening] (nomor kolom, mulai dari 1)
+        updateCols: [5, 6, 7, 8],   // <-- SESUAIKAN dengan sheet "Pipeline Merchant Senator"
+        extraCols: [9, 10],         // <-- SESUAIKAN (default: tepat setelah kolom Keterangan)
+        extraTrigger: "Sudah punya produk Bank Mandiri (EDC/LVM)",
+        title: "Pipeline Merchant Senator",
+        cabangCol: 1,
+        visitOptions: [
+            "Penambahan product (EDC/LVM/Kopra/Produk lainnya)",
+            "Isu Bisnis (MDR / Program)",
+            "Isu Teknis (Kendala mesin/Kendala QRIS/Kendala Kopra/Kendala teknis lainnya)",
+            "Belum bertemu owner/PIC, FU Kembali",
+            "Usaha tutup permanen/Tidak berkenan menggunakan produk BMRI",
+            "Sudah punya produk Bank Mandiri (EDC/LVM)"
+        ]
+    },
     pebisnisnonpayroll: {
         sheet: "Monitoring Pipeline Pebisnis Non Payroll",
         updateCols: [5, 6, 7, 8],
@@ -185,6 +204,7 @@ const pipelineSubMenus = {
         document.getElementById('cc-form').style.display = 'none';
     },
     "Pipeline Merchant": function() { loadPipelineGeneric('merchant'); },
+    "Pipeline Merchant Senator": function() { loadPipelineGeneric('merchantsenator'); },
     "Pipeline Pebisnis Non Payroll": function() { loadPipelineGeneric('pebisnisnonpayroll'); },
     "Pipeline Nasabah Senator": function() { loadPipelineGeneric('nasabahsenator'); },
     "Winback Pareto Cabang": function() { loadPipelineGeneric('winbackpareto'); }
@@ -618,6 +638,9 @@ async function loadPipelineGeneric(type) {
         });
     }
 
+    clearFields(['gp-mid', 'gp-rekening']);
+    document.getElementById('gp-extra').style.display = 'none';
+
     goToPage('page-pipeline-generic');
     document.getElementById('gp-loading').style.display = 'block';
     document.getElementById('gp-content').style.display = 'none';
@@ -666,8 +689,20 @@ async function loadPipelineGeneric(type) {
     }
 }
 
+// Tampilkan kolom MID & Nomor Rekening hanya jika hasil visit = extraTrigger
+function toggleGPExtra() {
+    const conf = genericPipelineConfig[currentGPType];
+    const box = document.getElementById('gp-extra');
+    if (!box) return;
+    const show = !!(conf && conf.extraTrigger &&
+        document.getElementById('gp-visit-result').value === conf.extraTrigger);
+    box.style.display = show ? 'block' : 'none';
+    if (!show) clearFields(['gp-mid', 'gp-rekening']);
+}
+
 function clearGenericPipelineForm() {
-    clearFields(['gp-input', 'gp-visit-status', 'gp-visit-date', 'gp-visit-result', 'gp-keterangan']);
+    clearFields(['gp-input', 'gp-visit-status', 'gp-visit-date', 'gp-visit-result', 'gp-keterangan', 'gp-mid', 'gp-rekening']);
+    toggleGPExtra();
     const btn = document.getElementById('btn-submit-gp');
     if (btn) { btn.innerText = "Submit Data"; btn.disabled = false; }
 }
@@ -700,6 +735,12 @@ async function submitPipelineGeneric() {
     if (!visitDate) { alert("Isi Tanggal Visit!"); return; }
     if (!visitResult) { alert("Pilih Hasil Visit!"); return; }
 
+    const needExtra = !!(conf.extraTrigger && visitResult === conf.extraTrigger);
+    const mid = needExtra ? document.getElementById('gp-mid').value.trim() : "";
+    const rekening = needExtra ? document.getElementById('gp-rekening').value.trim() : "";
+    if (needExtra && !mid) { alert("Isi MID!"); return; }
+    if (needExtra && !rekening) { alert("Isi Nomor Rekening!"); return; }
+
     const btn = document.getElementById('btn-submit-gp');
     setBtnLoading(btn);
 
@@ -714,6 +755,12 @@ async function submitPipelineGeneric() {
         visitResult: visitResult,
         keterangan: keterangan
     };
+
+    if (conf.extraCols) {
+        payload.extraCols = conf.extraCols;
+        payload.mid = mid;
+        payload.rekening = rekening;
+    }
 
     try {
         const result = await addToQueue(payload, btn);
@@ -1171,7 +1218,7 @@ function resetForm() {
         'merchant-input', 'visit-status', 'visit-date', 'visit-result', 'keterangan-pipeline',
         'newcif-input', 'newcif-visit-status', 'newcif-visit-date', 'newcif-visit-result', 'newcif-keterangan',
         'cc-input', 'cc-visit-status', 'cc-visit-date', 'cc-visit-result', 'cc-keterangan', 'follow-up-count',
-        'gp-input', 'gp-visit-status', 'gp-visit-date', 'gp-visit-result', 'gp-keterangan'
+        'gp-input', 'gp-visit-status', 'gp-visit-date', 'gp-visit-result', 'gp-keterangan', 'gp-mid', 'gp-rekening'
     ]);
 
     ['merchant-list', 'newcif-list', 'cc-list', 'gp-list', 'text-inputs-container'].forEach(id => {
@@ -1192,6 +1239,8 @@ function resetForm() {
     if (ccForm) ccForm.style.display = 'none';
 
     resetSubmitButtons();
+    const gpExtra = document.getElementById('gp-extra');
+    if (gpExtra) gpExtra.style.display = 'none';
 
     const errorMsg = document.getElementById('error-msg');
     if (errorMsg) errorMsg.style.display = 'none';

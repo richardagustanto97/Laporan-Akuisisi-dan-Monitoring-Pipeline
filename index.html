@@ -176,7 +176,7 @@
 
                 <div class="input-group">
                     <label>Hasil Visit</label>
-                    <select id="gp-visit-result" class="field-control">
+                    <select id="gp-visit-result" class="field-control" onchange="toggleGPExtra()">
                         <option value="" disabled selected>-- Pilih Hasil Visit --</option>
                     </select>
                 </div>
@@ -184,6 +184,18 @@
                 <div class="input-group">
                     <label>Keterangan</label>
                     <input type="text" id="gp-keterangan" placeholder="Masukkan keterangan">
+                </div>
+
+                <!-- Kolom tambahan (hanya untuk Pipeline Merchant Senator, hasil visit "Sudah punya produk Bank Mandiri") -->
+                <div id="gp-extra" style="display:none;">
+                    <div class="input-group">
+                        <label>MID</label>
+                        <input type="text" id="gp-mid" placeholder="Masukkan MID">
+                    </div>
+                    <div class="input-group">
+                        <label>Nomor Rekening</label>
+                        <input type="text" id="gp-rekening" placeholder="Masukkan nomor rekening">
+                    </div>
                 </div>
                 <button id="btn-submit-gp" class="submit-btn" onclick="submitPipelineGeneric()">Submit Data</button>
             </div>
