@@ -79,3 +79,33 @@ input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; 
 .field-control { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; box-sizing: border-box; }
 .loading-box { text-align: center; padding: 20px; color: #666; }
 .error-box { color: red; text-align: center; padding: 15px; }
+
+/* Header judul kolom: tampil sekali di atas, tetap menempel di layar saat scroll */
+.input-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    gap: 8px;
+    width: 100%;
+    padding: 8px 0;
+    margin-bottom: 8px;
+    background: white;
+    border-bottom: 1px solid #eee;
+    box-shadow: 0 4px 6px -4px rgba(0,0,0,0.12);
+    font-size: 12px;
+    font-weight: 700;
+    color: #444;
+}
+.input-header > div { min-width: 0; padding: 0 4px; overflow-wrap: anywhere; }
+.input-header .h-main { flex: 3; }
+.input-header .h-small,
+.input-header .h-kawasan,
+.input-header .h-status { flex: 2; }
+
+@media (max-width: 380px) {
+    .input-header { font-size: 10px; }
+    .input-header .h-main { flex: 3.5; }
+    .input-header .h-status { flex: 1.8; }
+    .input-header .h-kawasan { flex: 1.3; }
+}

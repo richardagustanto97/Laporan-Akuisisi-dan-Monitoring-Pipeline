@@ -91,7 +91,7 @@ const configMap = {
     "MTR Emas": { col1: "Nomor Rekening", col2: "NIK", type2: "text", hideCol2: true, col3: "Nama Nasabah", type3: "text", hideCol3: true },
     "Tab Now non GMM": { col1: "Nomor Rekening", col2: "NIK", type2: "text", hideCol2: true, col3: "Nama Nasabah", type3: "text", hideCol3: true },
     "Livin Next Gen": { col1: "Nomor Rekening", col2: "NIK", type2: "text", hideCol2: true, col3: "Nama Nasabah", type3: "text", hideCol3: true },
-    "Tabungan Emas": { col1: "Nomor Rekening", col2: "NIK", type2: "text", hideCol2: true, col3: "Nama Nasabah", type3: "text", hideCol3: true },
+    "Tabungan Emas": { col1: "Nomor Rekening", col2: "NIK", type2: "text", hideCol2: true, col3: "Nama Nasabah", type3: "text", hideCol3: true, col4: "Gramasi", type4: "number" },
     "Livin": { hideCol1: true, hideCol2: true },
     "Incoming CC": { col1: "Nama Nasabah", col2: "NIK", type2: "text", col3: "Tgl Lahir (ddmmyy)" },
     "MTBI": { col1: "Nomor Rekening", col2: "NIK", type2: "text", hideCol2: true, col3: "Nama Nasabah", type3: "text", hideCol3: true, col4: "Jenis Nasabah", type4: "select", options: ["Individu", "Badan Usaha","Payroll","Prioritas"] },
@@ -971,7 +971,43 @@ function buildOptionalField(slot, label, type, options, hidden) {
                     ${optionsHtml(options)}
                 </select>`;
     }
+    if (type === "number") {
+        return `<input type="text" inputmode="decimal" autocomplete="off" placeholder="${label}" class="${cls}" oninput="sanitizeDecimalInput(this)" style="padding: 10px;">`;
+    }
     return `<input type="text" placeholder="${label}" class="${cls}" style="padding: 10px;">`;
+}
+
+// Input desimal: hanya angka dan satu pemisah (koma atau titik), maksimal 3 angka di belakang koma
+function sanitizeDecimalInput(el) {
+    let v = el.value.replace(/[^0-9.,]/g, "");
+    const m = v.match(/[.,]/);
+    if (m) {
+        const idx = v.indexOf(m[0]);
+        v = v.slice(0, idx + 1) + v.slice(idx + 1).replace(/[.,]/g, "").slice(0, 3);
+    }
+    if (v !== el.value) el.value = v;
+}
+
+// "0,001" atau "0.001" -> angka 0.001
+function parseDecimalId(val) {
+    return Number(String(val).replace(",", "."));
+}
+
+// Header judul kolom (sticky) yang ditampilkan sekali di atas baris pertama
+function buildColumnHeader(config, selectedSub) {
+    const cells = [];
+    if (!config.hideCol1 && config.col1) cells.push({ label: config.col1, cls: "h-main" });
+    [2, 3, 4, 5].forEach(slot => {
+        const label = config["col" + slot];
+        if (label && !config["hideCol" + slot]) cells.push({ label: label, cls: "h-small" });
+    });
+    if (needsKawasan(selectedSub)) cells.push({ label: "Kawasan", cls: "h-kawasan" });
+    if (currentMenu === 'monitoring') cells.push({ label: "Status", cls: "h-status" });
+
+    const header = document.createElement('div');
+    header.className = "input-header";
+    header.innerHTML = cells.map(c => `<div class="${c.cls}">${c.label}</div>`).join('');
+    return header;
 }
 
 function generateTextInputs() {
@@ -990,6 +1026,8 @@ function generateTextInputs() {
     }
 
     const config = getFormConfig(selectedSub) || { col1: "Nama", col2: "Keterangan", type2: "text" };
+
+    container.appendChild(buildColumnHeader(config, selectedSub));
 
     for (let i = 1; i <= count; i++) {
         const row = document.createElement('div');
@@ -1112,6 +1150,16 @@ async function submitFinalData() {
             return;
         }
 
+        for (const [slot, val] of [[2, val2], [3, val3], [4, val4], [5, val5]]) {
+            if (config["type" + slot] === "number" && val !== "") {
+                const valid = /^\d+([.,]\d{1,3})?$/.test(val) && parseDecimalId(val) >= 0.001;
+                if (!valid) {
+                    alert(`Baris ${rowNum}: ${config["col" + slot]} harus berupa angka minimal 0,001 (maksimal 3 angka di belakang koma).`);
+                    return;
+                }
+            }
+        }
+
         if (needsKawasan(subKategori) && kawasanValue === "") {
             alert(`Baris ${rowNum}: Kawasan harus dipilih.`);
             return;
@@ -1130,7 +1178,9 @@ async function submitFinalData() {
         };
 
         if (currentMenu === 'akuisisi' || currentMenu === 'aktivasi') {
-            payload.fields = [val1, val2, val3, val4, val5];
+            payload.fields = [val1, val2, val3, val4, val5].map((v, idx) =>
+                (config["type" + (idx + 1)] === "number" && v !== "") ? parseDecimalId(v) : v
+            );
         } else {
             payload.namaNasabah = val1;
             payload.cifNasabah = val2;
